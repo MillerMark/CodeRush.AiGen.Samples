@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeRush.AiGen.Main", "CodeRush.AiGen.Main\CodeRush.AiGen.Main.csproj", "{60FEBBFB-0720-45F3-B95F-453D3E2B51CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeRush.AiGen.Tests", "CodeRush.AiGen.Tests\CodeRush.AiGen.Tests.csproj", "{4F5B88BA-CAA5-44AB-AAA6-33EA7D0D0F54}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readme", "Readme", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60FEBBFB-0720-45F3-B95F-453D3E2B51CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60FEBBFB-0720-45F3-B95F-453D3E2B51CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60FEBBFB-0720-45F3-B95F-453D3E2B51CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60FEBBFB-0720-45F3-B95F-453D3E2B51CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F5B88BA-CAA5-44AB-AAA6-33EA7D0D0F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F5B88BA-CAA5-44AB-AAA6-33EA7D0D0F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F5B88BA-CAA5-44AB-AAA6-33EA7D0D0F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F5B88BA-CAA5-44AB-AAA6-33EA7D0D0F54}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4EA08F18-9EEC-4413-A1BA-0AB1A57BDC2D}
+	EndGlobalSection
+EndGlobal
