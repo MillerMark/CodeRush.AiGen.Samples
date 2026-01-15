@@ -31,7 +31,7 @@ CodeRush.AiGen.Main
 
 Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The `Shared` folder contains common models and functionality used across examples. 
 
-Additionally, the CodeRush.AiGen.Tests project contains a single test case.
+Additionally, the `CodeRush.AiGen.Tests` project contains a single test case.
 
 ---
 
@@ -50,12 +50,12 @@ Once you've specified API keys and selected your AI model, you can invoke AiGen 
 Demonstrates how AiGen discovers and uses **related types up and down an inheritance hierarchy** to improve the quality of the AI coding response.
 
 ### Files of interest
-- 📄`IOrderValidator`
-- 📄`BaseValidator<T>`
-- 📄`OrderValidator`
+- 📄`IOrderValidator.cs`
+- 📄`BaseValidator.cs`
+- 📄`OrderValidator.cs`
 
 ### Scenario
-Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that partially duplicates some behavior already implemented in an ancestor:
+Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that partially duplicates some behavior already implemented elsewhere in the solution:
 
 ```csharp
        if (order is null) {
@@ -87,7 +87,7 @@ Inside `OrderValidator`, the `ValidateCore()` method contains validation logic t
        }
 ```
 
-If you look at the ancestor class `BaseValidator<T>`, you can see its `RequireCustomer()` method contains similar code:
+If you look at the ancestor class `BaseValidator<T>`, you can see its `RequireCustomer()` method contains somewhat similar code:
 
 ```csharp
     protected void RequireCustomer(Customer? customer, ValidationResult result) {
@@ -144,9 +144,9 @@ The ending code should look something like this:
         }
 ```
 
-There's no need to mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context.
+There's rarely a need to explicitly mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context and the surrounding code.
 
-AI can sometimes make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
+AI can make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
 
 ---
 
@@ -155,10 +155,10 @@ AI can sometimes make mistakes. If you get a result you don't like you can alway
 📁**Folder:** `HyperOptimizedDeltas`  
 📄**File:** `OrderTaxCalculator.cs`
 
-This example shows how AiGen can modify **small bits of logic** quickly inside one or more **large methods** without regenerating entire method bodies.
+This next example shows how AiGen can modify **small bits of logic** quickly inside one or more **large methods** without regenerating entire method bodies.
 
 ### Scenario 
-Inside `ComputeTaxes`, there is a TODO describing a business rule:
+Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describing a business rule:
 
 > Promotional discounts are normally non-taxable, but some customers are override-eligible => tax must be computed.
 
@@ -175,7 +175,26 @@ AiGen should:
 - Leave the rest of the method untouched
 - Apply the change directly (no copy/paste)
 
-This example is expected to demonstrates a high-speed AI response using smaller-grained deltas, which tend to reduce cost and latency.
+AiGen should remove the old assignment to taxableBase (`decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
+
+```csharp
+            decimal taxableBase = order.Subtotal;
+
+            // Promotional discounts are excluded from tax, except for override-eligible customers.
+            if (order.HasDiscount && customer.IsTaxExemptOverrideEligible) {
+                taxableBase -= order.DiscountAmount;
+            }
+```
+
+or you might get something like this:
+
+```csharp
+            decimal taxableBase = customer.IsTaxExemptOverrideEligible
+                ? (order.Subtotal - order.DiscountAmount)
+                : order.Subtotal;
+```
+
+Note the size of the method and the speed of the AI response (and compare AiGen's speed to other AI coding assistants working on similar tasks). This example demonstrates a high-speed AI response using smaller-grained deltas, which tend to reduce AI cost and latency.
 
 ---
 
@@ -187,9 +206,11 @@ This example is expected to demonstrates a high-speed AI response using smaller-
 This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**.
 
 ### Scenario A: Non-conflicting edits
-1. Launch AiGen with:
+1. Open `OrderSubmissionService.cs`
+2. Move the caret into the `OrderProcessingResult()` method.
+3. Launch AiGen with:
    > _“Add logging around failures in this method.”_
-2. While AiGen is running, append the XML doc comment with this text:
+4. While AiGen is running, append the method's XML doc comment with this:
    > `Logs any failures.`
 
 The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight.
