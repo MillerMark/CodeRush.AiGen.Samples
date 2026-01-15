@@ -39,7 +39,7 @@ Additionally, the CodeRush.AiGen.Tests project contains a single test case.
 
 To setup AiGen, follow the instructions [here](https://community.devexpress.com/blogs/markmiller/archive/2025/09/08/advanced-ai-setup-for-aigen-and-aifind-in-coderush-for-visual-studio.aspx#general-setup).
 
-Once you've specified API keys and selected your AI model, you can invoke AiGen via voice by **double-tapping** the **Ctrl** key (and holding it down while you speak), or by pressing **Caps**+**G** for a text prompt (if you have [Caps as a Modifier](https://docs.devexpress.com/CodeRushForRoslyn/403629/getting-started/keyboard-shortcuts/caps-as-a-modifier) enabled)
+Once you've specified API keys and selected your AI model, you can invoke AiGen via voice by **double-tapping** the **right** **Ctrl** key (and holding it down while you speak), or by pressing **Caps**+**G** for a text prompt (if you have [Caps as a Modifier](https://docs.devexpress.com/CodeRushForRoslyn/403629/getting-started/keyboard-shortcuts/caps-as-a-modifier) enabled)
 
 ---
 
@@ -114,7 +114,7 @@ Let's use AiGen to consolidate this duplication.
 Back in the `OrderValidator` class, place your caret inside the `ValidateCore()` method.
 
 ### Example spoken prompts (all equivalent)
-**Double=tap** the **Ctrl** key and keep it held down while you say one of the following (or similar):
+**Double=tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
 
 - _“Consolidate this logic with what we already have in the base class.”_
 - _“Take a look at the ancestor class and see if we can reuse any of that code here.”_
@@ -164,9 +164,11 @@ Inside `ComputeTaxes`, there is a TODO describing a business rule:
 
 Place your caret near the TODO comment inside the loop.
 
-### Example prompts
-> _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
-> _“Taxes calculated here should not include promotional discounts unless the customer is override-eligible.”_
+### Example prompts (all equivalent)
+**Double=tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
+
+- _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
+- _“Taxes calculated here should not include promotional discounts unless the customer is override-eligible.”_
 
 AiGen should:
 - Change only the relevant condition(s)
@@ -193,7 +195,7 @@ This example demonstrates how AiGen behaves **when the code changes while an AI 
 The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight.
 
 ### Scenario B: Conflicting edits
-1. Press undo (Ctrl+Z) to restore `OrderSubmissionService` to its original state.
+1. Press undo (**Ctrl**+**Z**) to restore `OrderSubmissionService` to its original state.
 2. Launch the same AiGen request (e.g., _“I want you to log any failures you find in this method”_).
 3. While the AI request is in flight, modify one of the failure points (e.g., replace a `throw` with an early return).
 
