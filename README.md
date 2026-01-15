@@ -1,8 +1,8 @@
 ﻿# CodeRush AiGen Samples
 
-This repository contains a small, focused C# solution used to demonstrate **CodeRush’s AiGen** capabilities inside Visual Studio.
+This repository contains a small C# solution that demonstrates **CodeRush’s AiGen** capabilities inside Visual Studio.
 
-The examples are realistic and minimal. The scenarios show how AiGen behaves as a **pair-programming assistant** — working with context, hierarchy, and runtime state — without requiring verbose or prescriptive prompts.
+Examples show how AiGen can behave as a **pair-programming assistant** — working with context, hierarchy, and runtime state — without requiring detailed instructions in the prompts.
 
 ---
 
@@ -18,10 +18,6 @@ Clone the repo and open:
 CodeRush.AiGen.Samples.sln
 ```
 
-Build once to ensure everything is ready.
-
----
-
 ## Main Project Layout
 
 ```
@@ -30,9 +26,7 @@ CodeRush.AiGen.Main
 ├─ HyperOptimizedDeltas
 ├─ InFlightEdits
 ├─ DebugRuntimeState
-├─ Shared
-
-CodeRush.AiGen.Tests
+└─ Shared
 ```
 
 Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The `Shared` folder contains common models and functionality used across examples. 
@@ -41,104 +35,191 @@ Additionally, the CodeRush.AiGen.Tests project contains a single test case.
 
 ---
 
+## Launching AiGen
+
+To setup AiGen, follow the instructions [here](https://community.devexpress.com/blogs/markmiller/archive/2025/09/08/advanced-ai-setup-for-aigen-and-aifind-in-coderush-for-visual-studio.aspx#general-setup).
+
+Once you've specified API keys and selected your AI model, you can invoke AiGen via voice by **double-tapping** the **Ctrl** key (and holding it down while you speak), or by pressing **Caps**+**G** for a text prompt (if you have [Caps as a Modifier](https://docs.devexpress.com/CodeRushForRoslyn/403629/getting-started/keyboard-shortcuts/caps-as-a-modifier) enabled)
+
+---
+
 ## 1. Context Acquisition & Hierarchy-Aware Refactoring
 
-**Folder:** `ContextAcquisition`
+📁**Folder:** `ContextAcquisition`
 
-This example demonstrates how AiGen discovers and uses **related types up and down an inheritance hierarchy** to improve code quality.
+Demonstrates how AiGen discovers and uses **related types up and down an inheritance hierarchy** to improve the quality of the AI coding response.
 
 ### Files of interest
-- `IOrderValidator`
-- `BaseValidator<T>`
-- `OrderValidator`
+- 📄`IOrderValidator`
+- 📄`BaseValidator<T>`
+- 📄`OrderValidator`
 
 ### Scenario
-`OrderValidator.ValidateCore` contains validation logic that partially duplicates behavior already implemented in the base class.
+Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that partially duplicates some behavior already implemented in an ancestor:
 
-Place your caret inside the duplicated guard code in `ValidateCore`.
+```csharp
+       if (order is null) {
+           result.Add("Order is required.");
+           return;
+       }
+
+       // TODO: Ask AiGen to consolidate this based on what we have in the base class.
+
+       var customer = order.Customer;
+
+       if (customer is null) {
+           result.Add("Customer is required.");
+           if (StopOnFirstError) return;
+       }
+
+       if (customer?.BillingAddress is null) {
+           result.Add("Billing address is required.");
+           if (StopOnFirstError) return;
+       }
+
+       if (string.IsNullOrWhiteSpace(customer?.BillingAddress?.CountryCode)) {
+           result.Add("Billing address country is required.");
+           if (StopOnFirstError) return;
+       }
+
+       if (string.IsNullOrWhiteSpace(order.OrderId)) {
+           result.Add("OrderId is required.");
+       }
+```
+
+If you look at the ancestor class `BaseValidator<T>`, you can see its `RequireCustomer()` method contains similar code:
+
+```csharp
+    protected void RequireCustomer(Customer? customer, ValidationResult result) {
+        if (customer is null) {
+            result.Add("Customer is required.");
+            if (StopOnFirstError)
+                return;
+        }
+
+        if (customer?.BillingAddress is null) {
+            result.Add("Billing address is required.");
+            if (StopOnFirstError)
+                return;
+        }
+
+        if (string.IsNullOrWhiteSpace(customer?.BillingAddress?.CountryCode)) {
+            result.Add("Billing address country is required.");
+        }
+    }
+```
+
+Let's use AiGen to consolidate this duplication.
+
+Back in the `OrderValidator` class, place your caret inside the `ValidateCore()` method.
 
 ### Example spoken prompts (all equivalent)
-Any of the following work:
+**Double=tap** the **Ctrl** key and keep it held down while you say one of the following (or similar):
 
-- **“Consolidate this logic with what we already have in the base class.”**
-- **“Refactor this to reuse what’s already in the ancestor class.”**
-- **“Use the inherited validation helpers instead of duplicating this.”**
+- _“Consolidate this logic with what we already have in the base class.”_
+- _“Take a look at the ancestor class and see if we can reuse any of that code here.”_
+- _“Let's use the inherited validation helpers instead of duplicating their logic here.”_
 
-AiGen is expected to:
+Release the **Ctrl** key when you are done speaking. If you prefer to type this in, press **Caps**+**G** to bring up a prompt window.
+
+AiGen should:
 - Traverse the inheritance hierarchy
 - Identify reusable base-class logic
-- Remove duplication while keeping order-specific checks local
+- Remove duplication while keeping `order`-specific checks local
 
-No method names or implementation details need to be mentioned.
+The ending code should look something like this:
+
+```csharp
+    protected override void ValidateCore(Order order, ValidationResult result) {
+        if (order is null) {
+            result.Add("Order is required.");
+            return;
+        }
+
+        RequireCustomer(order.Customer, result);
+        if (StopOnFirstError && !result.IsValid) return;
+
+        if (string.IsNullOrWhiteSpace(order.OrderId)) {
+            result.Add("OrderId is required.");
+        }
+```
+
+There's no need to mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context.
+
+AI can sometimes make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
 
 ---
 
 ## 2. Hyper-Optimized Deltas (Small Change, Large Method)
 
-**Folder:** `HyperOptimizedDeltas`  
-**File:** `OrderTaxCalculator.cs`
+📁**Folder:** `HyperOptimizedDeltas`  
+📄**File:** `OrderTaxCalculator.cs`
 
-This example shows how AiGen can modify **small, nuanced logic** inside a **large method** without regenerating the entire body.
+This example shows how AiGen can modify **small bits of logic** quickly inside one or more **large methods** without regenerating entire method bodies.
 
-### Scenario
+### Scenario 
 Inside `ComputeTaxes`, there is a TODO describing a business rule:
 
-> Promotional discounts are normally non-taxable, but some customers are override-eligible.
+> Promotional discounts are normally non-taxable, but some customers are override-eligible => tax must be computed.
 
 Place your caret near the TODO comment inside the loop.
 
-### Example prompt
-> “Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”
+### Example prompts
+> _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
+> _“Taxes calculated here should not include promotional discounts unless the customer is override-eligible.”_
 
 AiGen should:
 - Change only the relevant condition(s)
 - Leave the rest of the method untouched
 - Apply the change directly (no copy/paste)
 
-This demonstrates why fine-grained deltas reduce cost and latency.
+This example is expected to demonstrates a high-speed AI response using smaller-grained deltas, which tend to reduce cost and latency.
 
 ---
 
 ## 3. In-Flight Code Changes & Conflict Navigation
 
-**Folder:** `InFlightEdits`  
-**File:** `OrderSubmissionService.cs`
+📁**Folder:** `InFlightEdits`  
+📄**File:** `OrderSubmissionService.cs`
 
-This example demonstrates how AiGen behaves while **you continue editing code**.
+This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**.
 
 ### Scenario A: Non-conflicting edits
 1. Launch AiGen with:
-   > “Add logging around failures in this method.”
-2. While AiGen is running, edit the XML doc comment and add:
-   > “Logs any failures.”
+   > _“Add logging around failures in this method.”_
+2. While AiGen is running, append the XML doc comment with this text:
+   > `Logs any failures.`
 
-The AI change should integrate cleanly.
+The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight.
 
 ### Scenario B: Conflicting edits
-1. Launch the same AiGen request.
-2. While it’s running, modify one failure point (e.g., replace a `throw` with an early return).
+1. Press undo (Ctrl+Z) to restore `OrderSubmissionService` to its original state.
+2. Launch the same AiGen request (e.g., _“I want you to log any failures you find in this method”_).
+3. While the AI request is in flight, modify one of the failure points (e.g., replace a `throw` with an early return).
 
-AiGen will detect the conflict and flag it in the **AiGen Navigator**, rather than silently overwriting your change.
+When your request lands, AiGen will detect the conflict and flag it in the **AiGen Navigator**, rather than silently overwriting your change.
 
 ---
 
 ## 4. Debug-Time Runtime State → Test Generation
 
-**Folder:** `DebugRuntimeState`  
-**File:** `OrderAddressFormatter.cs`
+📁**Folder:** `DebugRuntimeState` 
+### Files of interest
+- 📄`OrderAddressFormatter.cs`
+- 📄`Program.cs`
 
-This example shows how AiGen uses **live debug values** to generate meaningful tests.
+This example shows how AiGen can use **live debug values** to generate meaningful test cases.
 
 ### Steps
-1. Run `CodeRush.AiGen.Main`.
+1. Open `Program.cs`
 2. Place a breakpoint on the call to:
    ```csharp
    formatter.BuildShippingLabel(order)
    ```
-3. When stopped at the breakpoint, invoke AiGen and say:
+3. Run the program (`CodeRush.AiGen.Main`).
+4. When stopped at the breakpoint, invoke AiGen and say:
 
-> **“Create a test case for this method based on these debug time parameter values.  
-> Add asserts to make sure the label has no double spaces and no dangling comma when region is blank.”**
+_“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
 
 AiGen will:
 - Reconstruct the runtime object graph
@@ -149,16 +230,17 @@ No placeholder test is required.
 
 ---
 
-## Philosophy of These Examples
+## Philosophy
 
-These samples are designed to show that:
+These samples are designed to show:
 
-- AiGen works best with **small, focused requests**
-- You don’t need to name methods or dictate structure
-- Minimal, human-shorthand prompts are sufficient
+- AiGen can handle **small, focused requests** in large methods/files.
+- Minimal, human-shorthand prompts are sufficient.
+- You can speak conversationally as if you were working with a pair programmer.
+- AiGen's rich contextual awareness means you rarely need to name methods/types or dictate structure.
 - Context (code, hierarchy, debug state) does the heavy lifting
 
-AiGen behaves less like a command interface and more like a coding partner that understands where it is and what matters.
+AiGen behaves less like a command interface and more like a coding partner that works to understands where it is and what matters.
 
 ---
 
