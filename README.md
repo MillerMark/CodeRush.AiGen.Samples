@@ -2,15 +2,15 @@
 
 This repository contains a small, focused C# solution used to demonstrate **CodeRush’s AiGen** capabilities inside Visual Studio.
 
-The examples are intentionally realistic and minimal. Each scenario shows how AiGen behaves as a **pair-programming assistant**—working with context, hierarchy, and runtime state—without requiring verbose or prescriptive prompts.
+The examples are realistic and minimal. The scenarios show how AiGen behaves as a **pair-programming assistant** — working with context, hierarchy, and runtime state — without requiring verbose or prescriptive prompts.
 
 ---
 
 ## Prerequisites
 
-- Visual Studio 2022
+- Visual Studio 2022 or higher
 - .NET 8 SDK
-- CodeRush (with AiGen enabled)
+- CodeRush 25.2 or higher (with [AiGen](https://community.devexpress.com/Blogs/markmiller/archive/2025/06/24/aigen-amp-aifind-in-coderush-for-visual-studio.aspx) enabled)
 
 Clone the repo and open:
 
@@ -22,7 +22,7 @@ Build once to ensure everything is ready.
 
 ---
 
-## Project Layout
+## Main Project Layout
 
 ```
 CodeRush.AiGen.Main
@@ -35,7 +35,9 @@ CodeRush.AiGen.Main
 CodeRush.AiGen.Tests
 ```
 
-Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post.
+Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The `Shared` folder contains common models and functionality used across examples. 
+
+Additionally, the CodeRush.AiGen.Tests project contains a single test case.
 
 ---
 
@@ -147,17 +149,6 @@ No placeholder test is required.
 
 ---
 
-## 5. Knowledge Sources (Optional)
-
-AiGen can also consult **official documentation** when relevant:
-
-- DevExpress MCP Server (for DevExpress APIs)
-- Microsoft MCP Server (for Microsoft technologies)
-
-Simply mention the relevant technology in your question when needed.
-
----
-
 ## Philosophy of These Examples
 
 These samples are designed to show that:
@@ -176,6 +167,6 @@ AiGen behaves less like a command interface and more like a coding partner that 
 - Clone the repo
 - Open the solution
 - Try each scenario in order
-- Experiment with your own shorthand prompts
+- Experiment with your own prompts
 
 For more details, see the accompanying blog post.
