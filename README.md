@@ -222,6 +222,34 @@ The pending AI change should still integrate cleanly even though we changed the 
 
 When your request lands, AiGen will detect the conflict and flag it in the **AiGen Navigator**, rather than silently overwriting your change.
 
+<img width="1520" height="692" alt="image" src="https://github.com/user-attachments/assets/3e688451-46a4-4d6b-a5ba-b75bcfe28cc7" />
+
+The conflict report shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see somethineg like this:
+
+> The change for this member was skipped because the target code changed inflight.
+> 
+> Original code at request time:
+```csharp
+        if (order.Customer is null)
+            throw new InvalidOperationException("Customer is required.");
+```
+> 
+> Current code at apply time:
+```csharp
+        if (order.Customer is null)
+            return null;
+```
+> 
+> Attempted replacement:
+```csharp
+        if (order.Customer is null) {
+            Console.Error.WriteLine($"[{nameof(OrderSubmissionService)}] Order submission failed: {nameof(order.Customer)} is required. OrderId='{order.OrderId ?? "<null>"}'.");
+            throw new InvalidOperationException("Customer is required.");«Caret»
+        }
+```
+>
+> Original and current code blocks must match on landing.
+
 ---
 
 ## 4. Debug-Time Runtime State → Test Generation
