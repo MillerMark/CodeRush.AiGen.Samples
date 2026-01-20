@@ -168,7 +168,7 @@ Place your caret near the TODO comment inside the loop.
 **Double-tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
 
 - _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
-- _“Taxes calculated here should not include promotional discounts unless the customer is override-eligible.”_
+- _“This code is always subtracting the discount to get a taxable base, but I only want to do that when the customer is not override eligible.”_
 
 AiGen should:
 - Change only the relevant condition(s)
@@ -178,23 +178,24 @@ AiGen should:
 AiGen might remove the original assignment to `taxableBase` (e.g., `decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
 
 ```csharp
-            decimal taxableBase = order.Subtotal;
-
-            // Promotional discounts are excluded from tax, except for override-eligible customers.
-            if (order.HasDiscount && customer.IsTaxExemptOverrideEligible) {
-                taxableBase -= order.DiscountAmount;
-            }
+            // Promotional discounts are normally non-taxable.
+            // For override-eligible customers, discounts are taxable (i.e., discount does NOT reduce the taxable base).
+            decimal taxableBase = customer.IsTaxExemptOverrideEligible
+                ? order.Subtotal
+                : order.Subtotal - order.DiscountAmount;
 ```
 
 or you might get something like this:
 
 ```csharp
-            decimal taxableBase = customer.IsTaxExemptOverrideEligible
-                ? (order.Subtotal - order.DiscountAmount)
-                : order.Subtotal;
+            decimal taxableBase = order.Subtotal;
+
+            // Discounts reduce taxable base only when the customer is NOT override-eligible.
+            if (!customer.IsTaxExemptOverrideEligible)
+                taxableBase -= order.DiscountAmount;
 ```
 
-Note the size of the method and the speed of the AI response (and compare AiGen's speed to other AI coding assistants working on similar tasks). This example demonstrates a high-speed AI response using smaller-grained deltas, which tend to reduce AI cost and latency.
+Note both the size of the method and the speed of the AI response (and compare AiGen's speed to other AI coding assistants working on similar tasks). Also note that our prompt (whichever one you chose) contained no symbol names. We simply described what we wanted to happen, and AI figured out how to do it. This example demonstrates a high-speed AI response using smaller-grained deltas, which can significantly reduce AI cost and latency.
 
 ---
 
