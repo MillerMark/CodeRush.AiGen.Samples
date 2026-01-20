@@ -262,13 +262,14 @@ The conflict report shows the original code at request time and the current code
 This example shows how AiGen can use **live debug values** to generate meaningful test cases.
 
 ### Steps
-1. Open `Program.cs`
-2. Place a breakpoint on the call to:
+1. Open `OrderAddressFormatter.cs`
+2. Place a **breakpoint** on the last line of the `BuildShippingLabel()` method:
    ```csharp
-   formatter.BuildShippingLabel(order)
+   return $"{name} — {cityRegionPostal}";
    ```
 3. Run the program (`CodeRush.AiGen.Main`).
-4. When stopped at the breakpoint, invoke AiGen and say:
+4. When stopped at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration can reveal the `Region` field is blank. The format is less than ideal -- it has a dangling comma followed by three spaces (it needs only a single space when the `Region` is empty). 
+5. Invoke AiGen and say:
 
 _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
 
