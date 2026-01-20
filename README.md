@@ -9,7 +9,6 @@ Examples show how AiGen can behave as a **pair-programming assistant** — worki
 ## Prerequisites
 
 - Visual Studio 2022 or higher
-- .NET 8 SDK
 - CodeRush 25.2 or higher (with [AiGen](https://community.devexpress.com/Blogs/markmiller/archive/2025/06/24/aigen-amp-aifind-in-coderush-for-visual-studio.aspx) enabled)
 
 Clone the repo and open:
@@ -37,7 +36,7 @@ Additionally, the `CodeRush.AiGen.Tests` project initially contains a single bas
 
 ## Launching AiGen
 
-To setup AiGen, follow the instructions [here](https://community.devexpress.com/blogs/markmiller/archive/2025/09/08/advanced-ai-setup-for-aigen-and-aifind-in-coderush-for-visual-studio.aspx#general-setup).
+To set up AiGen, follow the instructions [here](https://community.devexpress.com/blogs/markmiller/archive/2025/09/08/advanced-ai-setup-for-aigen-and-aifind-in-coderush-for-visual-studio.aspx#general-setup).
 
 Once you've specified API keys and selected your AI model, you can invoke AiGen via voice by **double-tapping** the **right** **Ctrl** key (and holding it down while you speak), or by pressing **Caps**+**G** for a text prompt (if you have [Caps as a Modifier](https://docs.devexpress.com/CodeRushForRoslyn/403629/getting-started/keyboard-shortcuts/caps-as-a-modifier) enabled)
 
@@ -127,7 +126,7 @@ AiGen should:
 - Identify reusable base-class logic
 - Remove duplication while keeping `order`-specific checks local
 
-The ending code should look something like this:
+The ending code might look something like this:
 
 ```csharp
     protected override void ValidateCore(Order order, ValidationResult result) {
@@ -142,6 +141,7 @@ The ending code should look something like this:
         if (string.IsNullOrWhiteSpace(order.OrderId)) {
             result.Add("OrderId is required.");
         }
+    }
 ```
 
 There's rarely a need to explicitly mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context and the surrounding code.
@@ -195,7 +195,7 @@ or you might get something like this:
                 taxableBase -= order.DiscountAmount;
 ```
 
-Note both the size of the method and the speed of the AI response (and compare AiGen's speed to other AI coding assistants working on similar tasks). Also note that our prompt (whichever one you chose) contained no symbol names. We simply described what we wanted to happen, and AI figured out how to do it. This example demonstrates a high-speed AI response using smaller-grained deltas, which can significantly reduce AI cost and latency.
+Note both the size of the method and the speed of the AI response. Notice the response time and how little code AiGen needs to regenerate to apply the change. Also note that our prompt (whichever one you chose) contained no symbol names. We simply described what we wanted to happen, and AI figured out how to do it. This example demonstrates a high-speed AI response using smaller-grained deltas, which can significantly reduce AI cost and latency.
 
 ---
 
@@ -227,29 +227,29 @@ When your request lands, AiGen will detect the conflict and flag it in the **AiG
 
 The conflict report shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see something like this:
 
-> The change for this member was skipped because the target code changed inflight.
-> 
-> Original code at request time:
+**The change for this member was skipped because the target code changed inflight.**
+
+**Original code at request time:**
 ```csharp
         if (order.Customer is null)
             throw new InvalidOperationException("Customer is required.");
 ```
-> 
-> Current code at apply time:
+
+**Current code at apply time:**
 ```csharp
         if (order.Customer is null)
             return null;
 ```
-> 
-> Attempted replacement:
+
+**Attempted replacement:**
 ```csharp
         if (order.Customer is null) {
             Console.Error.WriteLine($"[{nameof(OrderSubmissionService)}] Order submission failed: {nameof(order.Customer)} is required. OrderId='{order.OrderId ?? "<null>"}'.");
             throw new InvalidOperationException("Customer is required.");«Caret»
         }
 ```
->
-> Original and current code blocks must match on landing.
+
+**Original and current code blocks must match on landing.**
 
 ---
 
@@ -280,7 +280,7 @@ AiGen will:
 - Add a new xUnit test with meaningful assertions that catch the bug
 
 You should get a test case like this (notice the complex object construction code at the beginning to recreate the debug-time state which helped us discover the bug):
-```
+```csharp
     [Fact]
     public void BuildShippingLabel_RegionBlank_NoDoubleSpaces_AndNoDanglingComma() {
         // Arrange (debug-time values)
