@@ -31,7 +31,7 @@ CodeRush.AiGen.Main
 
 Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The `Shared` folder contains common models and functionality used across examples. 
 
-Additionally, the `CodeRush.AiGen.Tests` project contains a single test case.
+Additionally, the `CodeRush.AiGen.Tests` project initially contains a single baseline test case.
 
 ---
 
@@ -114,7 +114,7 @@ Let's use AiGen to consolidate this duplication.
 Back in the `OrderValidator` class, place your caret inside the `ValidateCore()` method.
 
 ### Example spoken prompts (all equivalent)
-**Double=tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
+**Double-tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
 
 - _“Consolidate this logic with what we already have in the base class.”_
 - _“Take a look at the ancestor class and see if we can reuse any of that code here.”_
@@ -146,7 +146,7 @@ The ending code should look something like this:
 
 There's rarely a need to explicitly mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context and the surrounding code.
 
-AI can make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
+Like any AI, AiGen can make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
 
 ---
 
@@ -165,7 +165,7 @@ Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describin
 Place your caret near the TODO comment inside the loop.
 
 ### Example prompts (all equivalent)
-**Double=tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
+**Double-tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
 
 - _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
 - _“Taxes calculated here should not include promotional discounts unless the customer is override-eligible.”_
@@ -175,7 +175,7 @@ AiGen should:
 - Leave the rest of the method untouched
 - Apply the change directly (no copy/paste)
 
-AiGen should remove the old assignment to taxableBase (`decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
+AiGen might remove the original assignment to `taxableBase` (e.g., `decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
 
 ```csharp
             decimal taxableBase = order.Subtotal;
@@ -207,7 +207,7 @@ This example demonstrates how AiGen behaves **when the code changes while an AI 
 
 ### Scenario A: Non-conflicting edits
 1. Open `OrderSubmissionService.cs`
-2. Move the caret into the `OrderProcessingResult()` method.
+2. Move the caret into the `Submit()` method.
 3. Launch AiGen with:
    > _“Add logging around failures in this method.”_
 4. While AiGen is running, append the method's XML doc comment with this:
@@ -224,7 +224,7 @@ When your request lands, AiGen will detect the conflict and flag it in the **AiG
 
 <img width="1520" height="692" alt="image" src="https://github.com/user-attachments/assets/3e688451-46a4-4d6b-a5ba-b75bcfe28cc7" />
 
-The conflict report shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see somethineg like this:
+The conflict report shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see something like this:
 
 > The change for this member was skipped because the target code changed inflight.
 > 
@@ -326,7 +326,7 @@ These samples are designed to show:
 - AiGen's rich contextual awareness means you rarely need to name methods/types or dictate structure.
 - Context (code, hierarchy, debug state) does the heavy lifting
 
-AiGen behaves less like a command interface and more like a coding partner that works to understands where it is and what matters.
+AiGen behaves less like a command interface and more like a coding partner that works to understand where it is and what matters.
 
 ---
 
@@ -337,4 +337,4 @@ AiGen behaves less like a command interface and more like a coding partner that 
 - Try each scenario in order
 - Experiment with your own prompts
 
-For more details, see the accompanying blog post.
+For more details, see the accompanying [blog post](https://int.devexpress.com/community/blogs/markmiller/archive/2026/01/07/new-aigen-functionality-in-coderush-for-visual-studio.aspx).
