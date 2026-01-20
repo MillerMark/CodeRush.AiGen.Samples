@@ -268,17 +268,51 @@ This example shows how AiGen can use **live debug values** to generate meaningfu
    return $"{name} — {cityRegionPostal}";
    ```
 3. Run the program (`CodeRush.AiGen.Main`).
-4. When stopped at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration can reveal the `Region` field is blank. The format is less than ideal -- it has a dangling comma followed by three spaces (it needs only a single space when the `Region` is empty). 
+4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration might reveal the `Region` field is empty. Assuming an empty region is allowed, the resulting format is less than ideal -- it has a dangling comma followed by three spaces (it needs only a single space when the `Region` is empty). We can fix this, but it's a good idea to add a test case to catch this condition first.
 5. Invoke AiGen and say:
 
 _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
 
 AiGen will:
 - Reconstruct the runtime object graph
-- Create a new xUnit test
-- Add meaningful assertions that catch the bug
+- Find the corresponding `OrderAddressFormatterTests` test fixture.
+- Add a new xUnit test with meaningful assertions that catch the bug
 
-No placeholder test is required.
+You should get a test case like this (notice the complex object construction code at the beginning to recreate the debug-time state which helped us discover the bug):
+```
+    [Fact]
+    public void BuildShippingLabel_RegionBlank_NoDoubleSpaces_AndNoDanglingComma() {
+        // Arrange (debug-time values)
+        var address = new Address {
+            City = "Seattle",
+            Region = " ", // blank/whitespace
+            PostalCode = "98101",
+            CountryCode = "US",
+            Line1 = "123 Example St"
+        };
+        var customer = new Customer { DisplayName = "Ada Lovelace", BillingAddress = address, Id = "C-42" };
+        var order = new Order {
+            Customer = customer,
+            DiscountAmount = 10m,
+            Subtotal = 120m,
+            OrderId = "DBG-1001",
+            TaxAmount = 0m
+        };
+
+        var formatter = new OrderAddressFormatter();
+
+        // Act
+        string label = formatter.BuildShippingLabel(order);
+
+        // Assert
+        Assert.DoesNotContain("  ", label);       // no double spaces anywhere
+        Assert.DoesNotContain(", ", label);       // no dangling comma + space
+        Assert.DoesNotMatch(@",\s*(—|$)", label); // no comma before em-dash or end
+        Assert.DoesNotMatch(@",\s+\d", label);    // no comma followed by spaces then digits (e.g., ",  98101")
+        Assert.Contains("Seattle", label);
+        Assert.Contains("98101", label);
+    }
+```
 
 ---
 
@@ -286,7 +320,7 @@ No placeholder test is required.
 
 These samples are designed to show:
 
-- AiGen can handle **small, focused requests** in large methods/files.
+- AiGen can quickly handle **small, focused requests** in large methods/files.
 - Minimal, human-shorthand prompts are sufficient.
 - You can speak conversationally as if you were working with a pair programmer.
 - AiGen's rich contextual awareness means you rarely need to name methods/types or dictate structure.
