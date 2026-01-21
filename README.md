@@ -22,7 +22,7 @@ CodeRush.AiGen.Samples.sln
 ```
 CodeRush.AiGen.Main
 ├─ ContextAcquisition
-├─ HyperOptimizedDeltas
+├─ FineGrainedDeltas
 ├─ InFlightEdits
 ├─ DebugRuntimeState
 └─ Shared
@@ -150,9 +150,9 @@ Like any AI, AiGen can make mistakes. If you get a result you don't like you can
 
 ---
 
-## 2. Hyper-Optimized Deltas (Small Change, Large Method)
+## 2. Fine-grained Deltas (Small Change, Large Method)
 
-📁**Folder:** `HyperOptimizedDeltas`  
+📁**Folder:** `FineGrainedDeltas`  
 📄**File:** `OrderTaxCalculator.cs`
 
 This next example shows how AiGen can modify **small bits of logic** quickly inside one or more **large methods** without regenerating entire method bodies.
