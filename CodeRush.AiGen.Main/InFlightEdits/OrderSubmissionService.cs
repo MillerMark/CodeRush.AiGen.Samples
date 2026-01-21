@@ -5,11 +5,13 @@ namespace CodeRush.AiGen.Main.InFlightEdits;
 /// <summary>
 /// Submits orders for processing.
 /// </summary>
-public sealed class OrderSubmissionService {
+public sealed class OrderSubmissionService
+{
     /// <summary>
     /// Submits an order for processing.
     /// </summary>
-    public OrderProcessingResult Submit(Order? order) {
+    public OrderProcessingResult? Submit(Order? order)
+    {
         // Check 1 - valid input
         if (order is null)
             throw new ArgumentNullException(nameof(order));
@@ -36,7 +38,8 @@ public sealed class OrderSubmissionService {
         return OrderProcessingResult.Ok();
     }
 
-    private static bool ExternalGatewayAccepts(Order order) {
+    private static bool ExternalGatewayAccepts(Order order)
+    {
         // Deterministic "failure" trigger for repeatability:
         // OrderIds ending with "X" are always rejected.
         string id = order.OrderId ?? string.Empty;
