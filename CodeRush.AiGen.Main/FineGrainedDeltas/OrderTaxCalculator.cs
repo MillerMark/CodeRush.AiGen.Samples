@@ -1,7 +1,7 @@
 ﻿using System;
 using CodeRush.AiGen.Main.Shared;
 
-namespace CodeRush.AiGen.Main.HyperOptimizedDeltas;
+namespace CodeRush.AiGen.Main.FineGrainedDeltas;
 
 /// <summary>
 /// Calculates tax for orders. This file is intentionally written to support AiGen examples.
