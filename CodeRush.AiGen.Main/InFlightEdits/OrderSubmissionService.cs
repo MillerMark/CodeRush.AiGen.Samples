@@ -2,9 +2,6 @@
 
 namespace CodeRush.AiGen.Main.InFlightEdits;
 
-/// <summary>
-/// Submits orders for processing.
-/// </summary>
 public sealed class OrderSubmissionService
 {
     /// <summary>
