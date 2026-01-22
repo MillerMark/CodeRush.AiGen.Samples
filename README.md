@@ -202,7 +202,7 @@ This example demonstrates fine-grained deltas in practice: smaller outputs, lowe
 
 ---
 
-## 3. In-Flight Edits, Parallel Agents & Conflict Isolation
+## 3. In-Flight Edits, Parallel Agents, and Conflict Isolation
 
 📁**Folder:** `InFlightEdits`  
 📄**File:** `OrderSubmissionService.cs`
@@ -217,18 +217,56 @@ This example demonstrates how AiGen behaves **when the code changes while an AI 
 4. While AiGen is running, append the method's XML doc comment with this:
    > `Logs any failures.`
 
-The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight.
+The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight. This allows you to continue editing while AiGen works, without blocking your workflow.
 
-### Scenario B: Conflicting edits
+### Scenario B: Parallel, Non-Conflicting Changes (Multiple AI Agents)
+
+In this scenario, we’ll launch **two AI agents simultaneously** to apply independent changes to the same method.
+
+Start by undoing any previous edits and restoring `OrderSubmissionService.Submit()` to its original state.
+
+Open `TrackOperationAttribute.cs` in the `Shared` folder and review the attribute. This is the telemetry metadata we’ll apply. Note that it includes:
+
+- A **Name** describing the tracked operation  
+- A **Category** grouping related telemetry events  
+
+Switch back to `OrderSubmissionService.cs` and place the caret inside the `Submit()` method. Perform the next two steps **back-to-back**:
+
+1. Launch the first AI agent with:
+   > _“Add logging around failures in this method.”_
+
+2. Launch a second AI agent with:
+   > _“Let’s add telemetry with the track operation attribute and set the category to orders.”_
+
+When the AI responses land, the **AiGen Navigator** will show multiple result tabs.
+<img width="759" height="505" alt="image" src="https://github.com/user-attachments/assets/57925e1d-202e-4396-9ef4-478914475cfb" />
+
+Agents may complete in a different order than they were launched.
+
+Notice that:
+- One agent modifies the **method body** (logging)
+- The other modifies the **method metadata** (the attribute)
+
+Because these changes target **different structural regions**, both land successfully without conflict.
+
+This demonstrates that skilled developers can safely run multiple AI agents in parallel when:
+- The requested changes **do not overlap**, and
+- Each agent’s task can be completed **independently** of the others.
+
+**Note:** When multiple in-flight AI agents complete their changes, undo follows **landing order**, not launch order — the most recently applied change is undone first. This mirrors standard Visual Studio editor behavior and keeps AI changes fully integrated into the undo stack.
+
+### Scenario C: Conflicting edits
 1. Press undo (**Ctrl**+**Z**) to restore `OrderSubmissionService` to its original state.
 2. Launch the same AiGen request (e.g., _“I want you to log any failures you find in this method”_).
 3. While the AI request is in flight, modify one of the failure points (e.g., replace a `throw` with an early return).
 
-When your request lands, AiGen will detect the conflict and flag it in the **AiGen Navigator**, rather than silently overwriting your change.
+When your request lands, AiGen detects the overlapping change and **blocks only the conflicting delta**, while allowing all other non-conflicting updates to apply normally.
 
 <img width="1520" height="692" alt="image" src="https://github.com/user-attachments/assets/3e688451-46a4-4d6b-a5ba-b75bcfe28cc7" />
 
-The conflict report shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see something like this:
+Because AiGen produces **fine-grained deltas**, conflicts are isolated to the smallest possible change. A single overlapping edit does not invalidate the rest of the AI response — only the affected update is held back, while all other safe modifications are integrated.
+
+The conflict report for the blocked delta shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see something like this:
 
 **The change for this member was skipped because the target code changed inflight.**
 
@@ -254,6 +292,8 @@ The conflict report shows the original code at request time and the current code
 
 **Original and current code blocks must match on landing.**
 
+This section demonstrates how AiGen behaves when code changes while AI requests are in flight — including parallel agents and isolated conflicts.
+
 ---
 
 ## 4. Debug-Time Runtime State → Test Generation
@@ -263,7 +303,7 @@ The conflict report shows the original code at request time and the current code
 - 📄`OrderAddressFormatter.cs`
 - 📄`Program.cs`
 
-This example shows how AiGen can use **live debug values** to generate meaningful test cases.
+This example shows how AiGen can use **live debug values** to generate test cases grounded in **actual runtime state**, not hand-constructed input.
 
 ### Steps
 1. Open `OrderAddressFormatter.cs`
@@ -272,17 +312,19 @@ This example shows how AiGen can use **live debug values** to generate meaningfu
    return $"{name} — {cityRegionPostal}";
    ```
 3. Run the program (`CodeRush.AiGen.Main`).
-4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration might reveal the `Region` field is empty. Assuming an empty region is allowed, the resulting format is less than ideal -- it has a dangling comma followed by three spaces (it needs only a single space when the `Region` is empty). We can fix this, but it's a good idea to add a test case to catch this condition first.
-5. Invoke AiGen and say:
+4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration might reveal the `Region` field is empty.
+   Assuming an empty region is allowed, the resulting label is malformed: it contains a **dangling comma** and **extra whitespace** caused by an empty `Region` value. We can fix this, but it's a good idea to add a test case to catch this condition first.
+6. Invoke AiGen and say:
 
 _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
 
 AiGen will:
-- Reconstruct the runtime object graph
-- Find the corresponding `OrderAddressFormatterTests` test fixture.
-- Add a new xUnit test with meaningful assertions that catch the bug
+- Reconstruct the runtime object graph from live debug values
+- Locate the appropriate `OrderAddressFormatterTests` fixture
+- Generate a new xUnit test that reproduces the observed state and behavior
+- Add targeted assertions that detect the formatting defect
 
-You should get a test case like this (notice the complex object construction code at the beginning to recreate the debug-time state which helped us discover the bug):
+You should get a test case like this (note the object graph reconstruction at the top, which recreates the exact debug-time state that exposed the bug):
 ```csharp
     [Fact]
     public void BuildShippingLabel_RegionBlank_NoDoubleSpaces_AndNoDanglingComma() {
@@ -318,19 +360,22 @@ You should get a test case like this (notice the complex object construction cod
     }
 ```
 
+This workflow makes it practical to capture real-world edge cases in the moment they are discovered. Instead of manually attempting to duplicate observed state, you can promote live runtime data directly into a durable, repeatable test.
+
 ---
 
 ## Philosophy
 
 These samples are designed to show:
 
-- AiGen can quickly handle **small, focused requests** in large methods/files.
-- Minimal, human-shorthand prompts are sufficient.
-- You can speak conversationally as if you were working with a pair programmer.
-- AiGen's rich contextual awareness means you rarely need to name methods/types or dictate structure.
-- Context (code, hierarchy, debug state) does the heavy lifting
+- AiGen supports both **large, multi-file changes** and **small, precise edits**.
+- This release highlights workflows where **fast, fine-grained changes** make AI practical for everyday development.
+- Minimal, shorthand prompts are sufficient—there’s no need to script the AI.
+- You can interact naturally, as if working with a **pair programmer**.
+- AiGen’s contextual awareness means you rarely need to name symbols or dictate structure.
+- Code context, type hierarchy, and debug-time state do most of the heavy lifting.
 
-AiGen behaves less like a command interface and more like a coding partner that works to understand where it is and what matters.
+AiGen behaves less like a command interface and more like a coding partner that understands context, intent, and scope — whether you’re making a small targeted edit or a broad, cross-cutting change.
 
 ---
 
