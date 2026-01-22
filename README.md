@@ -2,14 +2,15 @@
 
 This repository contains a small C# solution that demonstrates **CodeRush’s AiGen** capabilities inside Visual Studio.
 
-Examples show how AiGen can behave as a **pair-programming assistant** — working with context, hierarchy, and runtime state — without requiring detailed instructions in the prompts.
+The examples show how AiGen behaves like a **pair-programming assistant** — using code context, type hierarchy, and runtime state to deliver precise results without requiring verbose prompts.
 
 ---
 
 ## Prerequisites
 
 - Visual Studio 2022 or higher
-- CodeRush 25.2 or higher (with [AiGen](https://community.devexpress.com/Blogs/markmiller/archive/2025/06/24/aigen-amp-aifind-in-coderush-for-visual-studio.aspx) enabled)
+- CodeRush 25.23 or higher (with [AiGen](https://community.devexpress.com/Blogs/markmiller/archive/2025/06/24/aigen-amp-aifind-in-coderush-for-visual-studio.aspx) enabled)
+- An AI provider configured in CodeRush (OpenAI, Azure OpenAI, etc. -- see [Advanced AiGen Setup](https://community.devexpress.com/Blogs/markmiller/archive/2025/09/09/advanced-ai-setup-for-aigen-and-aifind-in-coderush-for-visual-studio.aspx))
 
 Clone the repo and open:
 
@@ -28,9 +29,9 @@ CodeRush.AiGen.Main
 └─ Shared
 ```
 
-Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The `Shared` folder contains common models and functionality used across examples. 
+Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The **Shared** folder contains common models and functionality used across examples. The **InFlightEdits** folder includes examples demonstrating parallel AI agents, conflict isolation, and partial landing of fine-grained deltas.
 
-Additionally, the `CodeRush.AiGen.Tests` project initially contains a single baseline test case.
+Additionally, the `CodeRush.AiGen.Tests` project contains a baseline test case and is extended by AiGen in the DebugRuntimeState example.
 
 ---
 
@@ -46,7 +47,7 @@ Once you've specified API keys and selected your AI model, you can invoke AiGen 
 
 📁**Folder:** `ContextAcquisition`
 
-Demonstrates how AiGen discovers and uses **related types up and down an inheritance hierarchy** to improve the quality of the AI coding response.
+Demonstrates how AiGen discovers and incorporates **related types across an inheritance hierarchy** to improve the quality and correctness of the AI coding response.
 
 ### Files of interest
 - 📄`IOrderValidator.cs`
@@ -54,7 +55,7 @@ Demonstrates how AiGen discovers and uses **related types up and down an inherit
 - 📄`OrderValidator.cs`
 
 ### Scenario
-Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that partially duplicates some behavior already implemented elsewhere in the solution:
+Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that **partially duplicates behavior implemented elsewhere in the type hierarchy**:
 
 ```csharp
        if (order is null) {
@@ -123,8 +124,8 @@ Release the **Ctrl** key when you are done speaking. If you prefer to type this 
 
 AiGen should:
 - Traverse the inheritance hierarchy
-- Identify reusable base-class logic
-- Remove duplication while keeping `order`-specific checks local
+- Identify reusable base-class validation logic
+- Remove duplication while keeping `order`-specific rules local
 
 The ending code might look something like this:
 
@@ -144,25 +145,25 @@ The ending code might look something like this:
     }
 ```
 
-There's rarely a need to explicitly mention method names, type names, or specific implementation details. AiGen keeps the tone conversational, inferring intent from Visual Studio context and the surrounding code.
+There’s rarely a need to explicitly mention method names, type names, or implementation details. AiGen infers intent from Visual Studio context, the type hierarchy, and surrounding code.
 
-Like any AI, AiGen can make mistakes. If you get a result you don't like you can always hit **undo** (**Ctrl**+**Z**) and try again.
+As with any AI-assisted change, review the results. If needed, you can undo (Ctrl+Z) and refine the prompt.
 
 ---
 
-## 2. Fine-grained Deltas (Small Change, Large Method)
+## 2. Fine-grained Deltas (Small Change in a Large Method)
 
 📁**Folder:** `FineGrainedDeltas`  
 📄**File:** `OrderTaxCalculator.cs`
 
-This next example shows how AiGen can modify **small bits of logic** quickly inside one or more **large methods** without regenerating entire method bodies.
+This example shows how AiGen can apply **fine-grained deltas** — modifying small, targeted regions inside large methods **without regenerating entire method bodies**.
 
 ### Scenario 
 Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describing a business rule:
 
 > Promotional discounts are normally non-taxable, but some customers are override-eligible => tax must be computed.
 
-Place your caret near the TODO comment inside the loop.
+Place your caret near the `TODO` comment inside the loop that computes the taxable base.
 
 ### Example prompts (all equivalent)
 **Double-tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
@@ -171,9 +172,9 @@ Place your caret near the TODO comment inside the loop.
 - _“This code is always subtracting the discount to get a taxable base, but I only want to do that when the customer is not override eligible.”_
 
 AiGen should:
-- Change only the relevant condition(s)
+- Change only the minimal code region required
 - Leave the rest of the method untouched
-- Apply the change directly (no copy/paste)
+- Apply the update directly in the editor (no manual copy/paste)
 
 AiGen might remove the original assignment to `taxableBase` (e.g., `decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
 
@@ -195,11 +196,13 @@ or you might get something like this:
                 taxableBase -= order.DiscountAmount;
 ```
 
-Note both the size of the method and the speed of the AI response. Notice the response time and how little code AiGen needs to regenerate to apply the change. Also note that our prompt (whichever one you chose) contained no symbol names. We simply described what we wanted to happen, and AI figured out how to do it. This example demonstrates a high-speed AI response using smaller-grained deltas, which can significantly reduce AI cost and latency.
+Note both the size of the method and how little code AiGen needs to generate to apply the change. The prompt contains no symbol names — we simply describe the desired behavior, and AiGen infers the implementation from context.
+
+This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
 
 ---
 
-## 3. In-Flight Code Changes & Conflict Navigation
+## 3. In-Flight Edits, Parallel Agents & Conflict Isolation
 
 📁**Folder:** `InFlightEdits`  
 📄**File:** `OrderSubmissionService.cs`
