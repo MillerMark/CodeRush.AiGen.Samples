@@ -1,5 +1,4 @@
-﻿using CodeRush.AiGen.Main.Shared;
-using CodeRush.AiGen.Main.DebugRuntimeState;
+﻿using CodeRush.AiGen.Main.DebugRuntimeState;
 
 namespace CodeRush.AiGen.Main {
     internal class Program {

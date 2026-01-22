@@ -1,6 +1,4 @@
-﻿using CodeRush.AiGen.Main.Shared;
-
-namespace CodeRush.AiGen.Main.DebugRuntimeState;
+﻿namespace CodeRush.AiGen.Main.DebugRuntimeState;
 
 /// <summary>
 /// Formats address strings for display and downstream integrations.

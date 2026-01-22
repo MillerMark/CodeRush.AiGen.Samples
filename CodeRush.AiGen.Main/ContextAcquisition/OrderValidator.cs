@@ -1,6 +1,4 @@
-﻿using CodeRush.AiGen.Main.Shared;
-
-namespace CodeRush.AiGen.Main.ContextAcquisition;
+﻿namespace CodeRush.AiGen.Main.ContextAcquisition;
 
 public sealed class OrderValidator : BaseValidator<Order>, IOrderValidator {
     public OrderValidator(bool stopOnFirstError = true) : base(stopOnFirstError) { }

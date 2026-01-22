@@ -1,6 +1,4 @@
-﻿using CodeRush.AiGen.Main.Shared;
-
-namespace CodeRush.AiGen.Main.ContextAcquisition;
+﻿namespace CodeRush.AiGen.Main.ContextAcquisition;
 
 /// <summary>
 /// Base class for validators that can either fast-fail or collect all errors.

@@ -1,5 +1,4 @@
 ﻿using System;
-using CodeRush.AiGen.Main.Shared;
 
 namespace CodeRush.AiGen.Main.FineGrainedDeltas;
 
