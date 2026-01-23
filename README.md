@@ -22,10 +22,11 @@ CodeRush.AiGen.Samples.sln
 
 ```
 CodeRush.AiGen.Main
+├─ ArchitecturalEdits
 ├─ ContextAcquisition
+├─ DebugRuntimeState
 ├─ FineGrainedDeltas
 ├─ InFlightEdits
-├─ DebugRuntimeState
 └─ Shared
 ```
 
@@ -151,7 +152,7 @@ As with any AI-assisted change, review the results. If needed, you can undo (Ctr
 
 ---
 
-## 2. Fine-grained Deltas (Small Change in a Large Method)
+## 2. Fine-Grained Deltas (Small Change in a Large Method)
 
 📁Folder: **FineGrainedDeltas**
 📄File: **OrderTaxCalculator.cs**
@@ -314,9 +315,9 @@ This example shows how AiGen can use **live debug values** to generate test case
 3. Run the program (`CodeRush.AiGen.Main`).
 4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration might reveal the `Region` field is empty.
    Assuming an empty region is allowed, the resulting label is malformed: it contains a **dangling comma** and **extra whitespace** caused by an empty `Region` value. We can fix this, but it's a good idea to add a test case to catch this condition first.
-6. Invoke AiGen and say:
+5. Invoke AiGen and say:
 
-_“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
+> _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
 
 AiGen will:
 - Reconstruct the runtime object graph from live debug values
@@ -384,9 +385,9 @@ public interface IOrderRule {
 ```
 
 Prompt (spoken or typed): 
-- _"I need ten non-trivial implementers of this interface. Put them in the rules namespace."_
+> _“I need ten non-trivial implementers of this interface. Put them in the rules namespace.”_
 
-Unlike previous demos that modify existing code, this request generates multiple new types. Because the AI reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
+Because the configured reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
 
 When the request finishes, AiGen will have created ten concrete IOrderRule implementations under a new namespace:
 `CodeRush.AiGen.Main.ArchitecturalEdits.Rules`
@@ -408,7 +409,7 @@ This step demonstrates AiGen’s ability to:
 
 ### Evolving the Contract Across the Hierarchy
 Return the caret to IOrderRule, then invoke AiGen with:
-- _“Add two properties — name and description — and update all implementers.”_
+> _“Add two properties — name and description — and update all implementers.”_
 
 AiGen should:
  * Add `Name` and `Description` properties to the interface
