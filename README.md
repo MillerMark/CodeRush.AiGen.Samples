@@ -45,14 +45,14 @@ Once you've specified API keys and selected your AI model, you can invoke AiGen 
 
 ## 1. Context Acquisition & Hierarchy-Aware Refactoring
 
-📁**Folder:** `ContextAcquisition`
+📁Folder: **ContextAcquisition**
 
 Demonstrates how AiGen discovers and incorporates **related types across an inheritance hierarchy** to improve the quality and correctness of the AI coding response.
 
 ### Files of interest
-- 📄`IOrderValidator.cs`
-- 📄`BaseValidator.cs`
-- 📄`OrderValidator.cs`
+- 📄**IOrderValidator.cs**
+- 📄**BaseValidator.cs**
+- 📄**OrderValidator.cs**
 
 ### Scenario
 Inside `OrderValidator`, the `ValidateCore()` method contains validation logic that **partially duplicates behavior implemented elsewhere in the type hierarchy**:
@@ -153,8 +153,8 @@ As with any AI-assisted change, review the results. If needed, you can undo (Ctr
 
 ## 2. Fine-grained Deltas (Small Change in a Large Method)
 
-📁**Folder:** `FineGrainedDeltas`  
-📄**File:** `OrderTaxCalculator.cs`
+📁Folder: **FineGrainedDeltas**
+📄File: **OrderTaxCalculator.cs**
 
 This example shows how AiGen can apply **fine-grained deltas** — modifying small, targeted regions inside large methods **without regenerating entire method bodies**.
 
@@ -204,13 +204,13 @@ This example demonstrates fine-grained deltas in practice: smaller outputs, lowe
 
 ## 3. In-Flight Edits, Parallel Agents, and Conflict Isolation
 
-📁**Folder:** `InFlightEdits`  
-📄**File:** `OrderSubmissionService.cs`
+📁Folder: **InFlightEdits**
+📄File: **OrderSubmissionService.cs**
 
 This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**.
 
 ### Scenario A: Non-conflicting edits
-1. Open `OrderSubmissionService.cs`
+1. Open **OrderSubmissionService.cs**
 2. Move the caret into the `Submit()` method.
 3. Launch AiGen with:
    > _“Add logging around failures in this method.”_
@@ -225,12 +225,12 @@ In this scenario, we’ll launch **two AI agents simultaneously** to apply indep
 
 Start by undoing any previous edits and restoring `OrderSubmissionService.Submit()` to its original state.
 
-Open `TrackOperationAttribute.cs` in the `Shared` folder and review the attribute. This is the telemetry metadata we’ll apply. Note that it includes:
+Open **TrackOperationAttribute.cs** in the **Shared** folder and review the attribute. This is the telemetry metadata we’ll apply. Note that it includes:
 
 - A **Name** describing the tracked operation  
 - A **Category** grouping related telemetry events  
 
-Switch back to `OrderSubmissionService.cs` and place the caret inside the `Submit()` method. Perform the next two steps **back-to-back**:
+Switch back to **OrderSubmissionService.cs** and place the caret inside the `Submit()` method. Perform the next two steps **back-to-back**:
 
 1. Launch the first AI agent with:
    > _“Add logging around failures in this method.”_
@@ -298,15 +298,15 @@ This section demonstrates how AiGen behaves when code changes while AI requests 
 
 ## 4. Debug-Time Runtime State → Test Generation
 
-📁**Folder:** `DebugRuntimeState` 
+📁Folder: **DebugRuntimeState**
 ### Files of interest
-- 📄`OrderAddressFormatter.cs`
-- 📄`Program.cs`
+- 📄**OrderAddressFormatter.cs**
+- 📄**Program.cs**
 
 This example shows how AiGen can use **live debug values** to generate test cases grounded in **actual runtime state**, not hand-constructed input.
 
 ### Steps
-1. Open `OrderAddressFormatter.cs`
+1. Open **OrderAddressFormatter.cs**
 2. Place a **breakpoint** on the last line of the `BuildShippingLabel()` method:
    ```csharp
    return $"{name} — {cityRegionPostal}";
@@ -363,6 +363,67 @@ You should get a test case like this (note the object graph reconstruction at th
 This workflow makes it practical to capture real-world edge cases in the moment they are discovered. Instead of manually attempting to duplicate observed state, you can promote live runtime data directly into a durable, repeatable test.
 
 ---
+## 5. Large-Scale Architectural Changes (Cross-Cutting Updates)
+
+📁Folder: **ArchitecturalEdits**
+### Files of interest
+- 📄**IOrderRule.cs**
+- 📄**RuleResult.cs**
+
+### Creating Interface Implementers in Bulk
+This example demonstrates AiGen’s ability to perform large-scale architectural edits, including generating multiple new types and evolving an interface contract across all implementers.
+
+Open **IOrderRule.cs**, and place the caret inside the `IOrderRule` interface:
+
+```csharp
+namespace CodeRush.AiGen.Main.ArchitecturalEdits;
+
+public interface IOrderRule { 
+    RuleResult Apply(Order order);
+}
+```
+
+Prompt (spoken or typed): 
+- _"I need ten non-trivial implementers of this interface. Put them in the rules namespace."_
+
+Unlike previous demos that modify existing code, this request generates multiple new types. Because the AI reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
+
+When the request finishes, AiGen will have created ten concrete IOrderRule implementations under a new namespace:
+`CodeRush.AiGen.Main.ArchitecturalEdits.Rules`
+
+<img width="366" height="307" alt="image" src="https://github.com/user-attachments/assets/493eec51-d7cf-4313-88f0-cfa7e26a3d34" />
+
+Each class should:
+ * Implement `IOrderRule`
+ * Perform a distinct, non-trivial order rule
+ * Produce meaningful `RuleResult` outcomes
+ * Reflect realistic order-processing concerns (fraud, pricing, eligibility, fulfillment, etc.)
+
+This step demonstrates AiGen’s ability to:
+ * Generate multiple production-quality types in a single request
+ * Enforce a shared interface contract across many implementations
+ * Respect namespace, folder structure, and solution organization
+ * Perform coordinated, multi-file edits across a codebase
+ * Introduce new architectural layers without manual scaffolding
+
+### Evolving the Contract Across the Hierarchy
+Return the caret to IOrderRule, then invoke AiGen with:
+- _“Add two properties — name and description — and update all implementers.”_
+
+AiGen should:
+ * Add `Name` and `Description` properties to the interface
+ * Update all existing implementations to satisfy the expanded contract
+ * Populate meaningful, domain-appropriate values for each rule
+
+Because this step modifies existing code rather than generating new types, it typically completes **significantly faster** than the previous bulk-creation prompt.
+
+Together, these two prompts demonstrate AiGen’s ability to:
+ * Perform **large-scale architectural refactoring**
+ * Maintain **consistency across many implementations**
+ * Propagate **interface contract changes safely across a hierarchy**
+ * Coordinate **multi-file edits with minimal developer intervention**
+
+Earlier examples emphasized fast, fine-grained edits. This scenario shows the other side of AiGen: the ability to perform broad, cross-cutting architectural changes when needed.
 
 ## Philosophy
 
