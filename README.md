@@ -197,7 +197,9 @@ or you might get something like this:
                 taxableBase -= order.DiscountAmount;
 ```
 
-Note both the size of the method and how little code AiGen needs to generate to apply the change. The prompt contains no symbol names — we simply describe the desired behavior, and AiGen infers the implementation from context.
+Note both the size of the method and how little code AiGen needs to generate to apply the change. 
+
+The prompt contains no symbol names — we simply describe the desired behavior, and AiGen infers the implementation from context.
 
 This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
 
@@ -215,7 +217,7 @@ This example demonstrates how AiGen behaves **when the code changes while an AI 
 2. Move the caret into the `Submit()` method.
 3. Launch AiGen with:
    > _“Add logging around failures in this method.”_
-4. While AiGen is running, append the method's XML doc comment with this:
+4. While AiGen is running, append the method's XML doc comment with this (manually typed or pasted change):
    > `Logs any failures.`
 
 The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight. This allows you to continue editing while AiGen works, without blocking your workflow.
