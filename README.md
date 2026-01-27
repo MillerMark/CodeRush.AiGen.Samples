@@ -496,15 +496,16 @@ Instead of describing the problem in detail, you simply point AiGen at the error
 
 ## Key Takeaways
 
-These samples are designed to demonstrate how AiGen fits into real development workflows:
+These samples demonstrate how AiGen fits into real development workflows:
 
 - AiGen supports both **large, multi-file architectural changes** and **small, high-precision edits**.
-- This release emphasizes scenarios where **fast, fine-grained changes** make AI practical for frequent, low-friction use.
+- **Fast, fine-grained changes** make AI practical for frequent, low-friction use in everyday coding.
 - Effective prompts can be **short and informal** — there’s no need to script or over-specify intent.
 - AiGen leverages **code context, type hierarchy, live compiler diagnostics, editor state, and debug-time values** to infer what matters.
+- AiGen can **analyze active compiler errors** and generate targeted fixes with minimal instruction.
 - Developers rarely need to name symbols, dictate structure, or manually scope changes — **context and diagnostics drive behavior**.
 
-In practice, AiGen behaves less like a command interface and more like a **context-aware coding partner** — capable of resolving active errors, applying surgical edits, and executing broad, cross-cutting changes when needed.
+In practice, AiGen behaves like a **context-aware coding partner** — resolving active errors, promoting runtime state into tests, applying surgical edits, and executing broad architectural changes when needed.
 
 ---
 
