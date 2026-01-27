@@ -22,6 +22,7 @@ CodeRush.AiGen.Samples.sln
 
 ```
 CodeRush.AiGen.Main
+├─ ActiveErrors
 ├─ ArchitecturalEdits
 ├─ ContextAcquisition
 ├─ DebugRuntimeState
@@ -391,7 +392,7 @@ Prompt (spoken or typed):
 
 Because the configured reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
 
-When the request finishes, AiGen will have created ten concrete IOrderRule implementations under a new namespace:
+When the request finishes, AiGen will have created ten concrete `IOrderRule` implementations under a new namespace:
 `CodeRush.AiGen.Main.ArchitecturalEdits.Rules`
 
 <img width="366" height="307" alt="image" src="https://github.com/user-attachments/assets/493eec51-d7cf-4313-88f0-cfa7e26a3d34" />
@@ -410,7 +411,7 @@ This step demonstrates AiGen’s ability to:
  * Introduce new architectural layers without manual scaffolding
 
 ### Evolving the Contract Across the Hierarchy
-Return the caret to IOrderRule, then invoke AiGen with:
+Return the caret to `IOrderRule`, then invoke AiGen with:
 > _“Add two properties — name and description — and update all implementers.”_
 
 AiGen should:
@@ -428,26 +429,91 @@ Together, these two prompts demonstrate AiGen’s ability to:
 
 Earlier examples emphasized fast, fine-grained edits. This scenario shows the other side of AiGen: the ability to perform broad, cross-cutting architectural changes when needed.
 
-## Philosophy
+---
 
-These samples are designed to show:
+## 6. Active Error Awareness (Fixing Compiler Errors from Editor Context)
 
-- AiGen supports both **large, multi-file changes** and **small, precise edits**.
-- This release highlights workflows where **fast, fine-grained changes** make AI practical for everyday development.
-- Minimal, shorthand prompts are sufficient—there’s no need to script the AI.
-- You can interact naturally, as if working with a **pair programmer**.
-- AiGen’s contextual awareness means you rarely need to name symbols or dictate structure.
-- Code context, type hierarchy, and debug-time state do most of the heavy lifting.
+📁Folder: **ActiveErrorAnalysis**  
+📄File: **OrderQueryService.cs**
 
-AiGen behaves less like a command interface and more like a coding partner that understands context, intent, and scope — whether you’re making a small targeted edit or a broad, cross-cutting change.
+This example demonstrates AiGen’s ability to **read active compiler errors** from the editor and resolve them using code context and diagnostics -- without the need to describe the problem in detail.
+
+### Enabling the Demo Error
+
+Open **OrderQueryService.cs** and **uncomment** the demo toggle at the top of the file:
+
+```csharp
+//#define DEMO_ACTIVE_ERRORS
+```
+
+This intentionally introduces a compiler error inside `GetHighValueOrderCountAsync()`.
+
+### Scenario
+
+The method applies LINQ operations directly to the result of `GetOrdersAsync()`, which returns a `Task<List<Order>>`. This produces a compile-time error because LINQ operators like `Where()` operate on collections — not tasks. 
+
+```csharp
+public async Task<int> GetHighValueOrderCountAsync(decimal minSubtotal) {
+    return GetOrdersAsync()
+        .Where(o => o.Subtotal >= minSubtotal)
+        .Count();
+}
+```
+
+<img width="916" height="142" alt="image" src="https://github.com/user-attachments/assets/bb004a43-0fd7-4201-8c7e-b41e7a49363f" />
+
+What we need to do is wait for the orders to arrive before filtering with `Where()`.
+
+### Fixing the Error with AiGen
+
+1. Place your caret on the `.Where(...)` call (where the error is surfaced)
+2. Invoke AiGen and say:
+   
+> _“Fix this.”_
+
+AiGen will:
+ * Detect the active compiler error at the caret
+ * Infer the intended async behavior
+ * Rewrite the logic to correctly await the task before applying LINQ
+
+A typical result might look like this:
+
+```csharp
+public async Task<int> GetHighValueOrderCountAsync(decimal minSubtotal) {
+    var orders = await GetOrdersAsync().ConfigureAwait(false);
+    return orders.Count(o => o.Subtotal >= minSubtotal);
+}
+```
+
+### What This Demonstrates
+This scenario shows AiGen can:
+ * Read active error diagnostics directly from the editor
+ * Infer correct async + LINQ behavior without explicit instructions
+ * Apply non-trivial fixes based on compiler feedback and surrounding context
+ * Resolve errors with a minimal prompt — even something as short as “Fix this.”
+
+Instead of describing the problem in detail, you simply point AiGen at the error and let the **code context, diagnostics, and intent **guide the solution. You can also drive fixes from Visual Studio's **Error List** tool window.
+
+## Key Takeaways
+
+These samples are designed to demonstrate how AiGen fits into real development workflows:
+
+- AiGen supports both **large, multi-file architectural changes** and **small, high-precision edits**.
+- This release emphasizes scenarios where **fast, fine-grained changes** make AI practical for frequent, low-friction use.
+- Effective prompts can be **short and informal** — there’s no need to script or over-specify intent.
+- AiGen leverages **code context, type hierarchy, live compiler diagnostics, editor state, and debug-time values** to infer what matters.
+- Developers rarely need to name symbols, dictate structure, or manually scope changes — **context and diagnostics drive behavior**.
+
+In practice, AiGen behaves less like a command interface and more like a **context-aware coding partner** — capable of resolving active errors, applying surgical edits, and executing broad, cross-cutting changes when needed.
 
 ---
 
 ## Next Steps
 
-- Clone the repo
-- Open the solution
-- Try each scenario in order
-- Experiment with your own prompts
+- Clone the repository  
+- Open the solution  
+- Run through the scenarios in order  
+- Experiment with your own prompts and workflows  
 
-For more details, see the accompanying [blog post](https://int.devexpress.com/community/blogs/markmiller/archive/2026/01/07/new-aigen-functionality-in-coderush-for-visual-studio.aspx).
+For more background and implementation details, see the accompanying blog post:  
+https://int.devexpress.com/community/blogs/markmiller/archive/2026/01/07/new-aigen-functionality-in-coderush-for-visual-studio.aspx
