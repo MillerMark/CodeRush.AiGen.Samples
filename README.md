@@ -208,7 +208,7 @@ else {
 
 Note both the size of the method and how little code AiGen needs to generate to apply the change. 
 
-The prompt contains no symbol names — we simply describe our intent, and AiGen infers the implementation from context.
+The prompt doesn’t require exact symbol names or structured references — we describe intent, and AiGen resolves the implementation from surrounding context.
 
 This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
 
