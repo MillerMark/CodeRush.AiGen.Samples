@@ -212,12 +212,14 @@ The prompt contains no symbol names — we simply describe our intent, and AiGen
 
 This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
 
-After AiGen lands the change, you can see evidence of the fine-grained delta in two places:
-1. **AiGen Navigator status bar**: Check the **elapsed time** and the **Reasoning out** token count. A fine-grained delta typically yields a small output (often far smaller than regenerating the full method).
+After AiGen applies the change, you can find evidence of the smaller delta in two places:
+1. **AiGen Navigator status bar**: Check the **elapsed time** and the **Reasoning out** token count. Fine-grained deltas yield small output token counts — typically far smaller than the count required to regenerate the full method.
 <img width="713" height="284" alt="image" src="https://github.com/user-attachments/assets/bf81b544-c280-4b47-a5d3-ab4e6cc4e504" />
 
-2. **Editor selection**: Highlighting the change in the AiGen Navigator selects the inserted/modified region for that entry. This makes the delta boundary visible at a glance. In the screenshot below, you can see from the selection that only a small portion of the method (the surgical edit) was changed.
+4. **Editor selection**: Selecting a change in the AiGen Navigator highlights the exact inserted/modified region, making the delta boundary immediately visible. In the screenshot below, you can see from the selection that only a small portion of the method (the selected edit) was changed. The rest of the method was untouched.
 <img width="607" height="804" alt="image" src="https://github.com/user-attachments/assets/56c5f58b-d7fb-4166-8767-0db99eaa30f3" />
+
+In contrast, regenerating the entire method (common in many AI tools) would scale output tokens with method size, increasing latency and cost.
 
 ---
 
