@@ -33,7 +33,7 @@ CodeRush.AiGen.Main
 
 Each folder in `CodeRush.AiGen.Main` corresponds to a specific AiGen capability demonstrated in the blog post. The **Shared** folder contains common models and functionality used across examples. The **InFlightEdits** folder includes examples demonstrating parallel AI agents, conflict isolation, and partial landing of fine-grained deltas.
 
-Additionally, the `CodeRush.AiGen.Tests` project contains a baseline test case and is extended by AiGen in the DebugRuntimeState example.
+Additionally, the `CodeRush.AiGen.Tests` project contains a baseline test case and is extended by AiGen in the **DebugRuntimeState** example.
 
 ---
 
@@ -89,7 +89,7 @@ Inside `OrderValidator`, the `ValidateCore()` method contains validation logic t
        }
 ```
 
-If you look at the ancestor class `BaseValidator<T>`, you can see its `RequireCustomer()` method contains somewhat similar code:
+If you examine the ancestor class `BaseValidator<T>`, you can see its `RequireCustomer()` method contains somewhat similar code:
 
 ```csharp
     protected void RequireCustomer(Customer? customer, ValidationResult result) {
@@ -156,14 +156,15 @@ As with any AI-assisted change, review the results. If needed, you can undo (Ctr
 ## 2. Fine-Grained Deltas (Small Change in a Large Method)
 
 📁Folder: **FineGrainedDeltas**
+
 📄File: **OrderTaxCalculator.cs**
 
 This example shows how AiGen applies **fine-grained deltas** — modifying small, targeted regions inside large methods **without regenerating entire method bodies**.
 
 ### Scenario 
-Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describing a business rule:
+Open the **FineGrainedDeltas** folder. Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describing a business rule:
 
-> // TODO: Promotional discounts are normally non-taxable, but check the customer's discount tax policy.
+> // TODO: Apply the customer's discount tax policy when calculating taxableBase.
 
 Place your caret on the `taxableBase` identifier below the `TODO` comment (inside the loop that computes the taxable base).
 
@@ -213,10 +214,10 @@ The prompt doesn’t require exact symbol names or structured references — we 
 This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
 
 After AiGen applies the change, you can find evidence of the smaller delta in two places:
-1. **AiGen Navigator status bar**: Check the **elapsed time** and the **Reasoning out** token count. Fine-grained deltas yield small output token counts — typically far smaller than the count required to regenerate the full method.
+1. **AiGen Navigator status bar**: Check the **Reasoning out** token count and the **elapsed time** (114 output tokens and 3.2 seconds, respectively, in the screenshot below). Fine-grained deltas yield small output token counts — typically far smaller than the count required to regenerate an entire method.
 <img width="713" height="284" alt="image" src="https://github.com/user-attachments/assets/bf81b544-c280-4b47-a5d3-ab4e6cc4e504" />
 
-4. **Editor selection**: Selecting a change in the AiGen Navigator highlights the exact inserted/modified region, making the delta boundary immediately visible. In the screenshot below, you can see from the selection that only a small portion of the method (the selected edit) was changed. The rest of the method was untouched.
+2. **Editor selection**: Selecting a change in the AiGen Navigator (e.g., "∆ selection") highlights the inserted/modified region, making the delta boundary immediately visible. In the screenshot below, the selection represents the small portion of the method that was regenerated. The rest of the method was untouched by AI.
 <img width="607" height="804" alt="image" src="https://github.com/user-attachments/assets/56c5f58b-d7fb-4166-8767-0db99eaa30f3" />
 
 In contrast, regenerating the entire method (common in many AI tools) would scale output tokens with method size, increasing latency and cost.
@@ -226,17 +227,71 @@ In contrast, regenerating the entire method (common in many AI tools) would scal
 ## 3. In-Flight Edits, Parallel Agents, and Conflict Isolation
 
 📁Folder: **InFlightEdits**
+
 📄File: **OrderSubmissionService.cs**
 
 This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**.
 
 ### Scenario A: Non-conflicting edits
-1. Open **OrderSubmissionService.cs**
+1. From the **InFlightEdits** folder, open **OrderSubmissionService.cs**
 2. Move the caret into the `Submit()` method.
 3. Launch AiGen with:
    > _“Add logging around failures in this method.”_
 4. While AiGen is running, append the method's XML doc comment with this (manually typed or pasted change):
    > `Logs any failures.`
+
+You should get something like this:
+
+```csharp
+    /// <summary>
+    /// Submits an order for processing. Logs any failures.
+    /// </summary>
+    public OrderProcessingResult? Submit(Order? order)
+    {
+        // Check 1 - valid input
+        if (order is null)
+        {
+            Console.Error.WriteLine("[OrderSubmissionService.Submit] Failure: order is null.");
+            throw new ArgumentNullException(nameof(order));
+        }
+
+        if (string.IsNullOrWhiteSpace(order.OrderId))
+        {
+            Console.Error.WriteLine("[OrderSubmissionService.Submit] Failure: OrderId is required.");
+            throw new InvalidOperationException("OrderId is required.");
+        }
+
+        if (order.Customer is null)
+        {
+            Console.Error.WriteLine($"[OrderSubmissionService.Submit] Failure: Customer is required. OrderId='{order.OrderId}'.");
+            throw new InvalidOperationException("Customer is required.");
+        }
+
+        // Check 2 - operational prerequisites
+        if (order.Customer.BillingAddress is null)
+        {
+            Console.Error.WriteLine($"[OrderSubmissionService.Submit] Failure: Billing address is required. OrderId='{order.OrderId}'.");
+            throw new InvalidOperationException("Billing address is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(order.Customer.BillingAddress.CountryCode))
+        {
+            Console.Error.WriteLine($"[OrderSubmissionService.Submit] Failure: Billing address country is required. OrderId='{order.OrderId}'.");
+            throw new InvalidOperationException("Billing address country is required.");
+        }
+
+        // Check 3 - operational success
+        bool externalAccepted = ExternalGatewayAccepts(order);
+        if (!externalAccepted)
+        {
+            Console.Error.WriteLine($"[OrderSubmissionService.Submit] Failure: External gateway rejected the order. OrderId='{order.OrderId}'.");
+            throw new InvalidOperationException("External gateway rejected the order.");
+        }
+
+        // All good.
+        return OrderProcessingResult.Ok();
+    }
+```
 
 The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight. This allows you to continue editing while AiGen works, without blocking your workflow.
 
@@ -258,6 +313,9 @@ Switch back to **OrderSubmissionService.cs** and place the caret inside the `Sub
 
 2. Launch a second AI agent with:
    > _“Let’s add telemetry with the track operation attribute and set the category to orders.”_
+
+The goal here is to start up a second agent while the first is still inflight. If the first AI response lands before you can launch the second, try undoing and then copying the second prompt to the clipboard. Then you can invoke it after launching the first agent with **Caps**+**G** (plus a paste).
+<img width="537" height="217" alt="image" src="https://github.com/user-attachments/assets/31c0d215-d6c0-4d68-9137-c33b81ac4c4d" />
 
 When the AI responses land, the **AiGen Navigator** will show multiple result tabs.
 <img width="759" height="505" alt="image" src="https://github.com/user-attachments/assets/57925e1d-202e-4396-9ef4-478914475cfb" />
