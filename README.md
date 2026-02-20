@@ -158,20 +158,25 @@ As with any AI-assisted change, review the results. If needed, you can undo (Ctr
 📁Folder: **FineGrainedDeltas**
 📄File: **OrderTaxCalculator.cs**
 
-This example shows how AiGen can apply **fine-grained deltas** — modifying small, targeted regions inside large methods **without regenerating entire method bodies**.
+This example shows how AiGen applies **fine-grained deltas** — modifying small, targeted regions inside large methods **without regenerating entire method bodies**.
 
 ### Scenario 
 Inside `OrderTaxCalculator`'s `ComputeTaxes()` method, there is a TODO describing a business rule:
 
-> Promotional discounts are normally non-taxable, but some customers are override-eligible => tax must be computed.
+> // TODO: Promotional discounts are normally non-taxable, but check the customer's discount tax policy.
 
-Place your caret near the `TODO` comment inside the loop that computes the taxable base.
+Place your caret on the `taxableBase` identifier below the `TODO` comment (inside the loop that computes the taxable base).
 
 ### Example prompts (all equivalent)
 **Double-tap** the **right** **Ctrl** key and keep it held down while you say one of the following (or similar):
 
-- _“Update this logic so promotional discounts are excluded from tax calculation, except for override-eligible customers.”_
-- _“This code is always subtracting the discount to get a taxable base, but I only want to do that when the customer is not override eligible.”_
+- _“Can we check the customer's discount policy so we can correctly calculate the taxable base?”_
+- _“Use the customer's discount policy for the right taxable base.”_
+
+Short prompts can also work (with the caret on `taxableBase`):
+
+- _“Let's incorporate the customer discount policy.”_
+- _“Check the customer's discount policy.”_
 
 AiGen should:
 - Change only the minimal code region required
@@ -181,28 +186,40 @@ AiGen should:
 AiGen might remove the original assignment to `taxableBase` (e.g., `decimal taxableBase = order.Subtotal - order.DiscountAmount;`) and replace it with something like this:
 
 ```csharp
-            // Promotional discounts are normally non-taxable.
-            // For override-eligible customers, discounts are taxable (i.e., discount does NOT reduce the taxable base).
-            decimal taxableBase = customer.IsTaxExemptOverrideEligible
-                ? order.Subtotal
-                : order.Subtotal - order.DiscountAmount;
+decimal taxableBase = customer.DiscountPolicy switch {
+    Customer.Discounts.FullyTaxable => order.Subtotal,
+    _ => order.Subtotal - order.DiscountAmount
+};
 ```
 
 or you might get something like this:
 
 ```csharp
-            decimal taxableBase = order.Subtotal;
+decimal taxableBase;
 
-            // Discounts reduce taxable base only when the customer is NOT override-eligible.
-            if (!customer.IsTaxExemptOverrideEligible)
-                taxableBase -= order.DiscountAmount;
+// Apply customer's discount tax policy.
+if (order.HasDiscount && customer.DiscountPolicy == Customer.Discounts.FullyTaxable) {
+    taxableBase = order.Subtotal;
+}
+else {
+    taxableBase = order.Subtotal - order.DiscountAmount;
+}
 ```
 
 Note both the size of the method and how little code AiGen needs to generate to apply the change. 
 
-The prompt contains no symbol names — we simply describe the desired behavior, and AiGen infers the implementation from context.
+The prompt doesn’t require exact symbol names or structured references — we describe intent, and AiGen resolves the implementation from surrounding context.
 
 This example demonstrates fine-grained deltas in practice: smaller outputs, lower token usage, reduced latency, and a more immediate turnaround — especially when working inside large methods.
+
+After AiGen applies the change, you can find evidence of the smaller delta in two places:
+1. **AiGen Navigator status bar**: Check the **elapsed time** and the **Reasoning out** token count. Fine-grained deltas yield small output token counts — typically far smaller than the count required to regenerate the full method.
+<img width="713" height="284" alt="image" src="https://github.com/user-attachments/assets/bf81b544-c280-4b47-a5d3-ab4e6cc4e504" />
+
+4. **Editor selection**: Selecting a change in the AiGen Navigator highlights the exact inserted/modified region, making the delta boundary immediately visible. In the screenshot below, you can see from the selection that only a small portion of the method (the selected edit) was changed. The rest of the method was untouched.
+<img width="607" height="804" alt="image" src="https://github.com/user-attachments/assets/56c5f58b-d7fb-4166-8767-0db99eaa30f3" />
+
+In contrast, regenerating the entire method (common in many AI tools) would scale output tokens with method size, increasing latency and cost.
 
 ---
 
