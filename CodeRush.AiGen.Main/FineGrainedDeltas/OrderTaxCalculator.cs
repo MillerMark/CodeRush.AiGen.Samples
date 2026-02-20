@@ -61,6 +61,7 @@ public sealed class OrderTaxCalculator {
             // TODO: Promotional discounts are normally non-taxable, but check the customer's discount tax policy.
 
             decimal taxableBase = order.Subtotal - order.DiscountAmount;
+
             if (taxableBase < 0m) {
                 taxableBase = 0m;
             }

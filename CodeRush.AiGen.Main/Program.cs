@@ -23,7 +23,7 @@ namespace CodeRush.AiGen.Main {
                     Id = "C-42",
                     DisplayName = "Ada Lovelace",
                     IsTaxExempt = false,
-                    DiscountTaxPolicy = Customer.Discounts.ReduceTaxableBase,
+                    DiscountPolicy = Customer.Discounts.ReduceTaxableBase,
                     BillingAddress = new Address {
                         Line1 = "123 Example St",
                         City = "Seattle",
