@@ -314,10 +314,11 @@ Switch back to **OrderSubmissionService.cs** and place the caret inside the `Sub
 2. Launch a second AI agent with:
    > _“Let’s add telemetry with the track operation attribute and set the category to orders.”_
 
-The goal here is to start up a second agent while the first is still inflight. If the first AI response lands before you can launch the second, try undoing and then copying the second prompt to the clipboard. Then you can invoke it after launching the first agent with **Caps**+**G** (plus a paste).
+The goal here is to start up a second agent while the first is still inflight. If the first AI response lands before you can launch the second, perform an undo (close the AiGen Navigator) and then copy the second prompt to the clipboard. Then after launching the first agent by voice, invoke the second agent with **Caps**+**G** (plus a paste).
+
 <img width="537" height="217" alt="image" src="https://github.com/user-attachments/assets/31c0d215-d6c0-4d68-9137-c33b81ac4c4d" />
 
-When the AI responses land, the **AiGen Navigator** will show multiple result tabs.
+When multiple AI responses land, the **AiGen Navigator** will show a result tab for each response.
 <img width="759" height="505" alt="image" src="https://github.com/user-attachments/assets/57925e1d-202e-4396-9ef4-478914475cfb" />
 
 Agents may complete in a different order than they were launched.
@@ -328,7 +329,7 @@ Notice that:
 
 Because these changes target **different structural regions**, both land successfully without conflict.
 
-This demonstrates that skilled developers can safely run multiple AI agents in parallel when:
+Skilled developers can safely run multiple AI agents in parallel when:
 - The requested changes **do not overlap**, and
 - Each agent’s task can be completed **independently** of the others.
 
@@ -382,16 +383,16 @@ This section demonstrates how AiGen behaves when code changes while AI requests 
 - 📄**OrderAddressFormatter.cs**
 - 📄**Program.cs**
 
-This example shows how AiGen can use **live debug values** to generate test cases grounded in **actual runtime state**, not hand-constructed input.
+This example shows how AiGen can use **live debug values** to generate test cases grounded in **actual runtime state**.
 
 ### Steps
-1. Open **OrderAddressFormatter.cs**
+1. In the **DebugRuntimeState** folder, open **OrderAddressFormatter.cs**
 2. Place a **breakpoint** on the last line of the `BuildShippingLabel()` method:
    ```csharp
    return $"{name} — {cityRegionPostal}";
    ```
 3. Run the program (`CodeRush.AiGen.Main`).
-4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,   98101". Further debug-time exploration might reveal the `Region` field is empty.
+4. When execution stops at the breakpoint, you can inspect the `cityRegionPostal` variable. The debug-time value is "Seattle,&nbsp;&nbsp;&nbsp;98101". Further debug-time exploration might reveal the `Region` field is empty.
    Assuming an empty region is allowed, the resulting label is malformed: it contains a **dangling comma** and **extra whitespace** caused by an empty `Region` value. We can fix this, but it's a good idea to add a test case to catch this condition first.
 5. Invoke AiGen and say:
 
