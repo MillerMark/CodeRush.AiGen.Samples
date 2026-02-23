@@ -8,7 +8,7 @@ public class OrderAddressFormatterTests {
     public void BuildShippingLabel_Simple_ReturnsExpected() {
         // Arrange
         var address = new Address { City = "Seattle", Region = "WA", PostalCode = "98101" };
-        var customer = new Customer { DisplayName = "Ada Smith", BillingAddress = address };
+        var customer = new Customer { DisplayName = "Ada Smith", BillingAddress = address, DiscountPolicy = Customer.Discounts.ReduceTaxableBase };
         var order = new Order { Customer = customer };
 
         var formatter = new OrderAddressFormatter();
