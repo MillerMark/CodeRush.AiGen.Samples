@@ -24,10 +24,7 @@ public sealed class OrderAddressFormatter {
 
         // BUG: If Region is null/empty, this produces ugly output like:
         // "Ada Smith — Seattle,  98101" (double spaces / dangling comma)
-        //
-        // We'll break here with runtime values that trigger the bug, then ask AiGen:
-        // "Create a test case for this method based on these debug time parameter values.
-        // Add asserts to make sure the label has no double spaces and no dangling comma when region is blank."
+
         string cityRegionPostal = $"{a.City}, {a.Region} {a.PostalCode}".Trim();
 
         return $"{name} — {cityRegionPostal}";
