@@ -398,7 +398,7 @@ This example shows how AiGen can use **live debug values** to generate test case
 
 > _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces, and when the region is blank, make sure there is no dangling comma.”_
 
-While waiting for the response, you might want to drill into the `order` parameter. It has a `Customer` property that in turn holds the `BillinpAddress` with the empty region that led to this bug.
+While waiting for the response, you might want to drill into the `order` parameter. It has a `Customer` property that in turn holds the `BillingAddress` with the empty region that led to this bug.
 
 <img width="618" height="183" alt="image" src="https://github.com/user-attachments/assets/a673515f-5463-43ce-8ae5-5afec7418ebd" />
 
