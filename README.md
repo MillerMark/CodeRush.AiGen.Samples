@@ -337,7 +337,7 @@ Skilled developers can safely run multiple AI agents in parallel when:
 
 ### Scenario C: Conflicting edits
 1. Close the AiGen Navigator (if it's still up) and press undo (**Ctrl**+**Z**) until you've restored `OrderSubmissionService` to its original state.
-2. Launch the same AiGen request (e.g., _“I want you to log any failures you find in this method”_).
+2. Launch the same AiGen request (e.g., _“I want you to log any individual failures you find in this method”_).
 3. While the AI request is in flight, modify one of the failure points (e.g., replace a `throw` with an early return).
 
 When your request lands, AiGen detects the overlapping change and **blocks only the conflicting delta**, while allowing all other non-conflicting updates to apply normally. The AiGen Navigator should look something like this (multiple selection changes, with one conflict). If the Navigator only shows a single conflict, you might want to undo try this scenario again.
@@ -376,7 +376,7 @@ This section demonstrates how AiGen behaves when the code changes while AI reque
 
 ---
 
-## 4. Debug-Time Runtime State → Test Generation
+## 4. Debug-Time Runtime State → Test Case Generation
 
 📁Folder: **DebugRuntimeState**
 ### Files of interest
@@ -470,7 +470,7 @@ public interface IOrderRule {
 ```
 
 Prompt (spoken or typed): 
-> _“I need ten non-trivial implementers of this interface. Put them in the rules namespace.”_
+> _“I need ten non-trivial implementers of this interface. Create them in the rules namespace.”_
 
 Because the configured reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
 
