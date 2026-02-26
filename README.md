@@ -327,7 +327,9 @@ Notice AiGen correctly discovered the TrackOperationAttribute from the Shared fo
 AiGen Navigator tabs may display one or more of the following icons:
 
 ⭐ Star -- the landing has not yet been viewed (typically a recent result).
+
 ✔️ Check -- all changes were successfully integrated (no conflicts)
+
 ❗ Exclamation -- one or more conflicts occurred on landing
 
 Notice that:
