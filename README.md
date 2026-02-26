@@ -218,7 +218,8 @@ After AiGen applies the change, you can find evidence of the smaller delta in tw
 <img width="713" height="284" alt="image" src="https://github.com/user-attachments/assets/bf81b544-c280-4b47-a5d3-ab4e6cc4e504" />
 
 2. **Editor selection**: Selecting a change in the AiGen Navigator (e.g., "∆ selection") highlights the inserted/modified region, making the delta boundary immediately visible. In the screenshot below, the selection represents the small portion of the method that was regenerated. The rest of the method was untouched by AI.
-<img width="607" height="804" alt="image" src="https://github.com/user-attachments/assets/56c5f58b-d7fb-4166-8767-0db99eaa30f3" />
+<img width="513" height="797" alt="image" src="https://github.com/user-attachments/assets/ebdcb68e-021c-4ea1-b5cf-eae4438a1d33" />
+
 
 In contrast, regenerating the entire method (common in many AI tools) would scale output tokens with method size, increasing latency and cost.
 
