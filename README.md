@@ -404,7 +404,7 @@ While waiting for the response, you might want to drill into the `order` paramet
 <img width="618" height="183" alt="image" src="https://github.com/user-attachments/assets/a673515f-5463-43ce-8ae5-5afec7418ebd" />
 
 AiGen will:
-- Reconstruct the runtime object graph from live debug values
+- Reconstruct the runtime object graph for the `order` parameter using live debug-time values
 - Locate the appropriate `OrderAddressFormatterTests` fixture
 - Generate a new xUnit test that reproduces the observed state and behavior
 - Add targeted assertions that detect the formatting defect
