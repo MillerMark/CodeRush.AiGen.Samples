@@ -322,7 +322,13 @@ The goal here is to start up a second agent while the first is still inflight. I
 When multiple AI responses land, the **AiGen Navigator** will show a result tab for each response.
 <img width="759" height="505" alt="image" src="https://github.com/user-attachments/assets/57925e1d-202e-4396-9ef4-478914475cfb" />
 
-Agents may complete in a different order than they were launched.
+Notice AiGen correctly discovered the TrackOperationAttribute from the Shared folder and added it with appropriate values for both Name and Category. Also note the orange arrow in the screenshot above -- it points to the second AI landing ("Failure logging" in this example -- your tabs may have different tab titles and agents may complete in a different order than they were launched).
+
+AiGen Navigator tabs may display one or more of the following icons:
+
+⭐ Star -- the landing has not yet been viewed (typically a recent result).
+✔️ Check -- all changes were successfully integrated (no conflicts)
+❗ Exclamation -- one or more conflicts occurred on landing
 
 Notice that:
 - One agent modifies the **method body** (logging)
