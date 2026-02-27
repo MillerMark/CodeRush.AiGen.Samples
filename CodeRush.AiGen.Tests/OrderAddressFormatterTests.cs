@@ -20,3 +20,10 @@ public class OrderAddressFormatterTests {
         Assert.Equal("Ada Smith — Seattle, WA 98101", label);
     }
 }
+
+
+
+
+
+
+//`![](C36AAB5D42A77F8CC8C3AC554BCE40DD.png;crcommand:OpenFile:IOrderRule.cs;;0.01309,0.01309)

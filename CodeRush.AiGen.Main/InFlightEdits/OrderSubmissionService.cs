@@ -38,3 +38,12 @@ public sealed class OrderSubmissionService {
         return !id.EndsWith("X", StringComparison.OrdinalIgnoreCase);
     }
 }
+
+
+
+
+
+
+
+//`![](C36AAB5D42A77F8CC8C3AC554BCE40DD.png;crcommand:OpenFile:OrderAddressFormatter.cs;;0.01309,0.01309)
+
