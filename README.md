@@ -218,7 +218,8 @@ After AiGen applies the change, you can find evidence of the smaller delta in tw
 <img width="713" height="284" alt="image" src="https://github.com/user-attachments/assets/bf81b544-c280-4b47-a5d3-ab4e6cc4e504" />
 
 2. **Editor selection**: Selecting a change in the AiGen Navigator (e.g., "∆ selection") highlights the inserted/modified region, making the delta boundary immediately visible. In the screenshot below, the selection represents the small portion of the method that was regenerated. The rest of the method was untouched by AI.
-<img width="607" height="804" alt="image" src="https://github.com/user-attachments/assets/56c5f58b-d7fb-4166-8767-0db99eaa30f3" />
+<img width="513" height="797" alt="image" src="https://github.com/user-attachments/assets/ebdcb68e-021c-4ea1-b5cf-eae4438a1d33" />
+
 
 In contrast, regenerating the entire method (common in many AI tools) would scale output tokens with method size, increasing latency and cost.
 
@@ -230,7 +231,7 @@ In contrast, regenerating the entire method (common in many AI tools) would scal
 
 📄File: **OrderSubmissionService.cs**
 
-This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**.
+This example demonstrates how AiGen behaves **when the code changes while an AI request is in-flight**. The demos in this section feature two changes that need to be executed back-to-back quickly; it's recommended to look ahead to understand all the steps in each scenario before launching AiGen.
 
 ### Scenario A: Non-conflicting edits
 1. From the **InFlightEdits** folder, open **OrderSubmissionService.cs**
@@ -240,7 +241,7 @@ This example demonstrates how AiGen behaves **when the code changes while an AI 
 4. While AiGen is running, append the method's XML doc comment with this (manually typed or pasted change):
    > `Logs any failures.`
 
-You should get something like this:
+You might get something like this:
 
 ```csharp
     /// <summary>
@@ -293,13 +294,13 @@ You should get something like this:
     }
 ```
 
-The pending AI change should still integrate cleanly even though we changed the code while the AI request was in-flight. This allows you to continue editing while AiGen works, without blocking your workflow.
+Notice the AI modifications integrated cleanly even though we changed the code while the AI request was in-flight. You can continue editing code while AiGen processes each request, so there are no blocks or pauses in your workflow.
 
 ### Scenario B: Parallel, Non-Conflicting Changes (Multiple AI Agents)
 
 In this scenario, we’ll launch **two AI agents simultaneously** to apply independent changes to the same method.
 
-Start by undoing any previous edits and restoring `OrderSubmissionService.Submit()` to its original state.
+Start by **undoing** any **previous edits** and restoring `OrderSubmissionService.Submit()` to its original state. And you can **close** the **AiGen Navigator** if it is still open.
 
 Open **TrackOperationAttribute.cs** in the **Shared** folder and review the attribute. This is the telemetry metadata we’ll apply. Note that it includes:
 
@@ -311,17 +312,25 @@ Switch back to **OrderSubmissionService.cs** and place the caret inside the `Sub
 1. Launch the first AI agent with:
    > _“Add logging around failures in this method.”_
 
-2. Launch a second AI agent with:
-   > _“Let’s add telemetry with the track operation attribute and set the category to orders.”_
+2. Launch a second AI agent with one of these:
+   > _“Add the track operation attribute. Category is orders.”_
 
 The goal here is to start up a second agent while the first is still inflight. If the first AI response lands before you can launch the second, perform an undo (close the AiGen Navigator) and then copy the second prompt to the clipboard. Then after launching the first agent by voice, invoke the second agent with **Caps**+**G** (plus a paste).
 
-<img width="537" height="217" alt="image" src="https://github.com/user-attachments/assets/31c0d215-d6c0-4d68-9137-c33b81ac4c4d" />
+<img width="537" height="217" alt="image" src="https://github.com/user-attachments/assets/fc45ed10-ae40-4768-9ccd-81f6aa98d429" />
 
 When multiple AI responses land, the **AiGen Navigator** will show a result tab for each response.
 <img width="759" height="505" alt="image" src="https://github.com/user-attachments/assets/57925e1d-202e-4396-9ef4-478914475cfb" />
 
-Agents may complete in a different order than they were launched.
+Notice AiGen correctly discovered the TrackOperationAttribute from the Shared folder and added it with appropriate values for both Name and Category. Also note the orange arrow in the screenshot above -- it points to the second AI landing ("Failure logging" in this example -- your tabs may have different tab titles and agents may complete in a different order than they were launched).
+
+AiGen Navigator tabs may display one or more of the following icons:
+
+⭐ Star -- the landing has not yet been viewed (typically a recent result).
+
+✔️ Check -- all changes were successfully integrated (no conflicts)
+
+❗ Exclamation -- one or more conflicts occurred on landing
 
 Notice that:
 - One agent modifies the **method body** (logging)
@@ -336,15 +345,15 @@ Skilled developers can safely run multiple AI agents in parallel when:
 **Note:** When multiple in-flight AI agents complete their changes, undo follows **landing order**, not launch order — the most recently applied change is undone first. This mirrors standard Visual Studio editor behavior and keeps AI changes fully integrated into the undo stack.
 
 ### Scenario C: Conflicting edits
-1. Press undo (**Ctrl**+**Z**) to restore `OrderSubmissionService` to its original state.
-2. Launch the same AiGen request (e.g., _“I want you to log any failures you find in this method”_).
+1. Close the AiGen Navigator (if it's still up) and press undo (**Ctrl**+**Z**) until you've restored `OrderSubmissionService` to its original state.
+2. Launch the same AiGen request (e.g., _“I want you to log any individual failures you find in this method”_).
 3. While the AI request is in flight, modify one of the failure points (e.g., replace a `throw` with an early return).
 
-When your request lands, AiGen detects the overlapping change and **blocks only the conflicting delta**, while allowing all other non-conflicting updates to apply normally.
+When your request lands, AiGen detects the overlapping change and **blocks only the conflicting delta**, while allowing all other non-conflicting updates to apply normally. The AiGen Navigator should look something like this (multiple selection changes, with one conflict). If the Navigator only shows a single conflict, you might want to undo try this scenario again.
 
 <img width="1520" height="692" alt="image" src="https://github.com/user-attachments/assets/3e688451-46a4-4d6b-a5ba-b75bcfe28cc7" />
 
-Because AiGen produces **fine-grained deltas**, conflicts are isolated to the smallest possible change. A single overlapping edit does not invalidate the rest of the AI response — only the affected update is held back, while all other safe modifications are integrated.
+Because AiGen typically produces **fine-grained deltas**, conflicts are isolated to the smallest possible change. A single overlapping edit does not invalidate the rest of the AI response — only the affected update is held back, while all other safe modifications are integrated.
 
 The conflict report for the blocked delta shows the original code at request time and the current code at apply time, as well as the attempted replacement. You might see something like this:
 
@@ -372,11 +381,11 @@ The conflict report for the blocked delta shows the original code at request tim
 
 **Original and current code blocks must match on landing.**
 
-This section demonstrates how AiGen behaves when code changes while AI requests are in flight — including parallel agents and isolated conflicts.
+This section demonstrates how AiGen behaves when the code changes while AI requests are in flight — including parallel agents and isolated conflicts.
 
 ---
 
-## 4. Debug-Time Runtime State → Test Generation
+## 4. Debug-Time Runtime State → Test Case Generation
 
 📁Folder: **DebugRuntimeState**
 ### Files of interest
@@ -396,15 +405,19 @@ This example shows how AiGen can use **live debug values** to generate test case
    Assuming an empty region is allowed, the resulting label is malformed: it contains a **dangling comma** and **extra whitespace** caused by an empty `Region` value. We can fix this, but it's a good idea to add a test case to catch this condition first.
 5. Invoke AiGen and say:
 
-> _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces and no dangling comma when the region is blank.”_
+> _“Create a test case for this method based on these debug time parameter values. Add asserts to make sure the label has no double spaces, and when the region is blank, make sure there is no dangling comma.”_
+
+While waiting for the response, you might want to drill into the `order` parameter. It has a `Customer` property that in turn holds the `BillingAddress` with the empty region that led to this bug.
+
+<img width="618" height="183" alt="image" src="https://github.com/user-attachments/assets/a673515f-5463-43ce-8ae5-5afec7418ebd" />
 
 AiGen will:
-- Reconstruct the runtime object graph from live debug values
+- Reconstruct the runtime object graph for the `order` parameter using live debug-time values
 - Locate the appropriate `OrderAddressFormatterTests` fixture
 - Generate a new xUnit test that reproduces the observed state and behavior
 - Add targeted assertions that detect the formatting defect
 
-You should get a test case like this (note the object graph reconstruction at the top, which recreates the exact debug-time state that exposed the bug):
+You should get a test case like this (note the object graph reconstruction at the top, which recreates the somewhat sophisticated debug-time state that exposed the bug):
 ```csharp
     [Fact]
     public void BuildShippingLabel_RegionBlank_NoDoubleSpaces_AndNoDanglingComma() {
@@ -442,6 +455,8 @@ You should get a test case like this (note the object graph reconstruction at th
 
 This workflow makes it practical to capture real-world edge cases in the moment they are discovered. Instead of manually attempting to duplicate observed state, you can promote live runtime data directly into a durable, repeatable test.
 
+After creating the new test case, you can stop debugging and run it if you like (it should fail since the code hasn't been fixed yet).
+
 ---
 ## 5. Large-Scale Architectural Changes (Cross-Cutting Updates)
 
@@ -464,7 +479,7 @@ public interface IOrderRule {
 ```
 
 Prompt (spoken or typed): 
-> _“I need ten non-trivial implementers of this interface. Put them in the rules namespace.”_
+> _“I need ten non-trivial implementers of this interface. Create them in the rules namespace.”_
 
 Because the configured reasoning model is synthesizing several non-trivial implementations, this step typically takes longer to complete (around 20–35 seconds).
 
@@ -472,6 +487,8 @@ When the request finishes, AiGen will have created ten concrete `IOrderRule` imp
 `CodeRush.AiGen.Main.ArchitecturalEdits.Rules`
 
 <img width="366" height="307" alt="image" src="https://github.com/user-attachments/assets/493eec51-d7cf-4313-88f0-cfa7e26a3d34" />
+
+You can press **F7**/**F8** to navigate back and forth through these new classes.
 
 Each class should:
  * Implement `IOrderRule`
